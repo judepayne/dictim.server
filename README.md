@@ -21,6 +21,10 @@ dictim server has two api's. A high level api for boxes and arrows diagrams (i.e
 
 Here's an example of the high level api '/graph' generating an architectural diagram.
 
+![Example architecture diagram](images/arch_example.svg)
+
+was generated from this json description of the diagram..
+
 
 ```bash
 curl --header "Content-Type: application/json" \
@@ -164,11 +168,6 @@ curl --header "Content-Type: application/json" \
 }'
   http://localhost:5001/graph
 ```
-
-Will return the svg of this diagram
-
-![Example architecture diagram](images/arch_example.svg)
-
 
 The inputs of the '/graph' api are discussed below.
 
