@@ -10,16 +10,12 @@ Dictim dockerized. Call a web server to convert dictim into svg!
 **dictim server** is a handy deployable webserver which offers a REST api to convert dictim into diagrams.
 
 
-**TODO**
-- Switch from using http to https
-- Consider building a high level api for sequence diagrams as `/graph` is for network diagrams.
-- Arbitrary nesting of conditions
-- more tests
+## Why
+
+Being able to produce diagrams dynamically from data is a powerful way to understand a complex system. Not only does it automate away a lot of work, but being dynamic opens up new possibilities; imagine being able to highlight certain aspects of your diagram during a presentation, change the scope of the data shown in response to a question or group/ slice the data in a different way.
 
 
-## Ok, give me an example
-
-Sure.
+## Show me an example
 
 dictim server has two api's. A high level api for boxes and arrows diagrams (i.e. Architecture diagrams) and a lower level api where you pass in dictim in json form. This can be useful for other types of diagrams like sequence diagrams.
 
@@ -431,6 +427,11 @@ Successful requests will result into a 200 response with a Content-Type of `imag
 Unsuccessful requests will result in a 400 response with the error message as the body.
 
 
+**TODO**
+- Switch from using http to https
+- Consider building a high level api for sequence diagrams as `/graph` is for network diagrams.
+- Arbitrary nesting of conditions
+- more tests
 
 
 ## License
