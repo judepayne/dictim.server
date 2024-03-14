@@ -1,0 +1,97 @@
+
+(def ex-diagram
+  {:nodes '({:id "app12872",
+             :name "Trade pad",
+             :owner "Lakshmi",
+             :dept "Finance",
+             :functions ("Position Keeping" "Quoting"),
+             :tco 1200000,
+             :process "p.112"}
+            {:id "app12873",
+             :name "Data Source",
+             :owner "India",
+             :dept "Securities",
+             :functions ("Booking" "Order Mgt"),
+             :tco 1100000,
+             :process "p.114"}
+            {:id "app12874",
+             :name "Crypto Bot",
+             :owner "Joesph",
+             :dept "Equities",
+             :functions ("Accounting" "Booking"),
+             :tco 500000,
+             :process "p.112"}
+            {:id "app12875",
+             :name "Data Solar",
+             :owner "Deepak",
+             :dept "Securities",
+             :functions ("Position Keeping" "Data Master"),
+             :tco 1000000,
+             :process "p.114"}
+            {:id "app12876",
+             :name "Data Solar",
+             :owner "Lakshmi",
+             :dept "Risk",
+             :functions ("Accounting" "Data Master"),
+             :tco 1700000,
+             :process "p.114"})
+   :edges '({:src "app12874", :dest "app12875", :data-type "security reference"}
+            {:src "app12874", :dest "app12876", :data-type "quotes"}
+            {:src "app12875", :dest "app12875", :data-type "instructions"}
+            {:src "app12874", :dest "app12872", :data-type "instructions"}
+            {:src "app12875", :dest "app12874", :data-type "client master"}
+            {:src "app12875", :dest "app12874", :data-type "allocations"})
+   :node->key :id
+   :node->container :dept
+   :container->parent {"Finance" "2LOD" "Risk" "2LOD" "Securities" "FO" "Equities" "FO"}
+   :node-specs {:labels [[{:key :owner} [:equals :dept "Equities"]][{:key :name}]]}
+   :edge-specs {:labels [[{:key :data-type}]]}
+   :container->attrs {"Securities" {:style.fill "green"}}})
+
+
+
+curl --header "Content-Type: application/json" \
+  --request POST \
+  --data '{"username":"xyz","password":"xyz"}' \
+  http://localhost:5001/network
+
+
+curl --header "Content-Type: application/json" \
+  --request POST \
+  --data '{"nodes":[{"id":"app12872","name":"Trade pad","owner":"Lakshmi","dept":"Finance","functions":["Position Keeping","Quoting"],"tco":1200000,"process":"p.112"},{"id":"app12873","name":"Data Source","owner":"India","dept":"Securities","functions":["Booking","Order Mgt"],"tco":1100000,"process":"p.114"},{"id":"app12874","name":"Crypto Bot","owner":"Joesph","dept":"Equities","functions":["Accounting","Booking"],"tco":500000,"process":"p.112"},{"id":"app12875","name":"Data Solar","owner":"Deepak","dept":"Securities","functions":["Position Keeping","Data Master"],"tco":1000000,"process":"p.114"},{"id":"app12876","name":"Data Solar","owner":"Lakshmi","dept":"Risk","functions":["Accounting","Data Master"],"tco":1700000,"process":"p.114"}],"edges":[{"src":"app12874","dest":"app12875","data-type":"security reference"},{"src":"app12874","dest":"app12876","data-type":"quotes"},{"src":"app12875","dest":"app12875","data-type":"instructions"},{"src":"app12874","dest":"app12872","data-type":"instructions"},{"src":"app12875","dest":"app12874","data-type":"client master"},{"src":"app12875","dest":"app12874","data-type":"allocations"}],"node->key":"id","node->container":"dept","container->parent":{"Finance":"2LOD","Risk":"2LOD","Securities":"FO","Equities":"FO"},"node-specs":{"labels":[[{"key":"owner"},["equals","dept","Equities"]],[{"key":"name"}]]},"edge-specs":{"labels":[[{"key":"data-type"}]]},"container->attrs":{"Securities":{"style.fill":"green"}}}' \
+  http://localhost:5001/graph
+
+
+
+curl --header "Content-Type: application/json" \
+  --request POST \
+  --data '[["Peter","Friends",["tristram","T Biggs expanded",["tris","TAB"],["maddie","Madeline"],["tris","--","maddie","wedding bells?"],["tris","->","children","previously sired"],["children","the brood",["Oliver","Eldest",{"style":{"fill":"orange"}}],["Roof","Good footballer",{"shape":"person"}]]]]]' \
+  http://localhost:5001/dictim
+
+
+curl --header "Content-Type: application/json" \
+  --request POST \
+  --data '[{"shape":"sequence_diagram"},["alice","->","bob","What does it mean?"],["bob","->","alice","The ability to play bridge or\ngolf as if they were games."]]' \
+  http://localhost:5001/dictim
+
+
+curl --header "Content-Type: application/json" \
+  --request POST \
+  --data '[
+	    {
+	      "shape": "sequence_diagram"
+	    },
+	    [
+	      "alice",
+	      "->",
+	      "bob",
+	      "What does it mean?"
+	    ],
+	    [
+	      "bob",
+	      "->",
+	      "alice",
+	      "The ability to play bridge or\ngolf as if they were games."
+	    ]
+	  ]' \
+  http://localhost:5001/dictim
