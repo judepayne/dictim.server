@@ -298,7 +298,7 @@ You should send a POST request to the `/graph` route with a json map with the fo
 is used to map a single container "Securities" to styling instructions that indicates that the fill color of that container should be green. Please see this [page](https://d2lang.com/tour/style) for details on things that can be styled. `label` is another key that can be added to these maps. |
 
 
-### node-specs, edge->specs mini dsl
+### node-specs, edge-specs mini dsl
 
 It would be powerful to be able to conditionally style nodes and edges depending on their content. That's what the mini dsl for these two keys allows you to do!
 
