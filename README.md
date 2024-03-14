@@ -228,7 +228,7 @@ From another terminal you can use curl to post the example command above to the 
 
 In the dictim.server folder there is a `Dockerfile` that can be used to build a container than builds the standalone webserver and downloads and installs d2 so it's a complete solution for hosting dictim.server.
 
-From the dictim.server directory, first let's build the container image. (Of course, you should have Docker or Podman or another container management solution installed)
+From the dictim.server directory that you cloned locally, first let's build the container image. (Of course, you should have Docker or Podman or another container management solution installed)
 
 ```bash
 ./build.sh
