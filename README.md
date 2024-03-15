@@ -288,15 +288,13 @@ You should send a POST request to the `/graph` route with a json map with the fo
 | `"node-specs"` & `"edge-specs"` | map nodes and edges to the visual styles that should be used to display that node or edge. The values of these two keys are a mini dsl (domain specific language) that requires further explanation. Please see below for more details. |
 | `"node->container"` | this indicates the use to use in node maps to map a node to its containing container (if it has/ needs one). |
 | `"container->parent"` | this should be a map of containers to their parent container (if needed) and is how you create hierarchies of containers within containers in the digram. |
-| `"container->attrs"` | a map of containers to the visual styles that should be used to display that container. For example in the curl command at the top of this page:
-```json
+| `"container->attrs"` | a map of containers to the visual styles that should be used to display that container. For example in the curl command at the top of this page: ```json
   "container->attrs": {
     "Securities": {
       "style.fill": "green"
     }
   }
-```
-is used to map a single container "Securities" to styling instructions that indicates that the fill color of that container should be green. Please see this [page](https://d2lang.com/tour/style) for details on things that can be styled. `label` is another key that can be added to these maps. |
+``` is used to map a single container "Securities" to styling instructions that indicates that the fill color of that container should be green. Please see this [page](https://d2lang.com/tour/style) for details on things that can be styled. `label` is another key that can be added to these maps. |
 
 
 ### node-specs, edge-specs mini dsl
