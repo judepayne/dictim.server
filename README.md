@@ -273,7 +273,9 @@ You should send a POST request to the `/graph` route with a json map with the fo
 
 *Manatory keys:*
 
+
 | key | expanation |
+| --- | ---------- |
 | `"nodes"` | a vector of maps, each map being a representation of one node. The maps don't have to be homogenous (i.e. have the same keys) but often are if you representing multiple instances of the same type of thing. |
 | `"edges"` | a vector of maps, each map being a representation of one edge. Each edge must have `"src"` and `"dest"` keys and any other keys you need to model the edge. Again, they don't need to be homogenous but often are. the `"src"` and `"dest:"` keys are how you tie edges to nodes. The value of each of these keys must be the value of one of (the same one across all nodes) keys in the maps representing the nodes. The pointer to that (node) key is.. |
 | `"node->key"` | this indicates the key to use in node maps to uniquely represent that node. The value returned must be unique for each node. Often this could be some sort of `"id"` key. |
@@ -282,6 +284,7 @@ You should send a POST request to the `/graph` route with a json map with the fo
 *Optional keys:*
 
 | key | expanation |
+| --- | ---------- |
 | `"node-specs"` & `"edge-specs"` | map nodes and edges to the visual styles that should be used to display that node or edge. The values of these two keys are a mini dsl (domain specific language) that requires further explanation. Please see below for more details. |
 | `"node->container"` | this indicates the use to use in node maps to map a node to its containing container (if it has/ needs one). |
 | `"container->parent"` | this should be a map of containers to their parent container (if needed) and is how you create hierarchies of containers within containers in the digram. |
