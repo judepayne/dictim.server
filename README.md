@@ -19,11 +19,15 @@ Being able to produce diagrams dynamically from data is a powerful way to unders
 
 <table>
   <tr>
-    <td><img src="images/gallery1.svg" width=200 height=200></td>
-    <td><img src="images/gallery2.svg" width=200 height=200></td>
-    <td><img src="images/gallery3.svg" width=200 height=200></td>
+    <td><img src="images/gallery1.svg" width=250 height=250></td>
+    <td><img src="images/gallery2.svg" width=250 height=250></td>
+    <td><img src="images/gallery3.svg" width=250 height=250></td>
   </tr>
-
+  <tr>
+    <td><img src="images/gallery4.svg" width=250 height=250></td>
+    <td><img src="images/gallery5.svg" width=250 height=250></td>
+    <td><img src="images/gallery6.svg" width=250 height=250></td>
+  </tr>
 </table>
 
 
