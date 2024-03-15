@@ -289,7 +289,6 @@ You should send a POST request to the `/graph` route with a json map with the fo
 | `"node->container"` | this indicates the use to use in node maps to map a node to its containing container (if it has/ needs one). |
 | `"container->parent"` | this should be a map of containers to their parent container (if needed) and is how you create hierarchies of containers within containers in the digram. |
 | `"container->attrs"` | a map of containers to the visual styles that should be used to display that container. For example in the curl command at the top of this page:
-
 ```json
   "container->attrs": {
     "Securities": {
