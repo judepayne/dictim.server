@@ -25,7 +25,7 @@ TODO
 
 Currently there are two functions.
 - The high-level graph api on the `/graph` route for boxes and arrows diagrams. [Tutorial and Reference](graph_ref.md)
-- The low-level dictim api on the `dictim` route which can be used to create several different styles of diagrams, including sequence diagrams. [Tutorial and Reference](dictim_ref.md)
+- The low-level dictim api on the `/dictim` route which can be used to create several different styles of diagrams, including sequence diagrams. [Tutorial and Reference](dictim_ref.md)
 
 
 **TODO** A todo is to build a second high-level api dedicated to sequence diagrams.
