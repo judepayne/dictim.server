@@ -9,7 +9,6 @@ Dictim dockerized. Call a web server to convert dictim into svg!
 
 **dictim server** is a handy deployable webserver which offers a REST api to convert dictim in json form into diagrams.
 
-[Tutorial](tutorial.md)
 
 ## Why
 
@@ -34,7 +33,7 @@ Currently there are two functions.
 
 ## Deploying
 
-There are two options for deploying dictim server: as a standalone microservice jar or as a container (that has the microservice running within it).
+There are two options for deploying dictim server: as a standalone microservice jar or as a container (has the microservice running within it).
 
 ### Configuration before building
 
@@ -71,7 +70,7 @@ then, build the standalone jar file:
 clj -T:build uber
 ```
 
-This will produce a `target/' folder in the dictim.server directory. Within that you'll find a jar called named `dictimserver-standalone.jar`.
+This will produce a `target/` folder in the dictim.server directory. Within that you'll find a jar called named `dictimserver-standalone.jar`.
 
 You can run this from where it is, or move it to somewhere else, e.g. a different machine.
 
