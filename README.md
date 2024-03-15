@@ -17,10 +17,14 @@ Being able to produce diagrams dynamically from data is a powerful way to unders
 
 ## Gallery
 
+<table>
+  <tr>
+    <img src="images/gallery1.svg" width=200 height=200>
+    <img src="images/gallery2.svg" width=200 height=200>
+    <img src="images/gallery3.svg" width=200 height=200>
+  </tr>
 
-<img src="images/gallery1.svg" width=100 height=100 style="horizontal-align:left">
-<img src="images/gallery2.svg" width=100 height=100 style="horizontal-align:middle">
-<img src="images/gallery3.svg" width=100 height=100 style="horizontal-align:right">
+</table>
 
 
 ## API
