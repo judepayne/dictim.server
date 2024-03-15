@@ -18,9 +18,9 @@ Being able to produce diagrams dynamically from data is a powerful way to unders
 ## Gallery
 
 
-<img src="gallery1.svg" width=100 height=100 style="horizontal-align:left">
-<img src="gallery2.svg" width=100 height=100 style="horizontal-align:middle">
-<img src="gallery3.svg" width=100 height=100 style="horizontal-align:right">
+<img src="images/gallery1.svg" width=100 height=100 style="horizontal-align:left">
+<img src="images/gallery2.svg" width=100 height=100 style="horizontal-align:middle">
+<img src="images/gallery3.svg" width=100 height=100 style="horizontal-align:right">
 
 
 ## API
