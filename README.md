@@ -31,7 +31,7 @@ Ordinary diagrams go stale over time, but data driven diagrams are generated at 
   </tr>
   <tr>
     <td><img src="images/gallery6.svg" width=250 height=250></td>
-    <td><img src="images/gallery8" width=250 height=250></td>
+    <td><img src="images/gallery8.png" width=250 height=250></td>
     <td><img src="images/gallery7.svg" width=250 height=250></td>
   </tr>
 </table>
