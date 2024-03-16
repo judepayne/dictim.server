@@ -127,7 +127,7 @@ Successful requests will result into a 200 response with a Content-Type of `imag
 
 Unsuccessful requests will result in a 400 response with the error message as the body.
 
-A 401 Internal Server Error generally means that the json was invalid.
+A 401 Internal Server Error generally means that the json sent was invalid.
 
 
 

@@ -142,7 +142,6 @@ Try posting to the webserver using any of the sample `curl` commands in src/app/
 - Switch from using http to https
 - Consider building a high level api for sequence diagrams as `/graph` is for network diagrams.
 - Arbitrary nesting of conditions
-- more tests
 
 
 ## License

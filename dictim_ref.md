@@ -1,11 +1,24 @@
+# The dictim api
 
-### The dictim api
+## API Reference
 
-The dictim api accepts the json-ic form of dictim which is covered [here](https://github.com/judepayne/dictim/wiki/Dictim-Syntax).
+The dictim syntax is covered [here](https://github.com/judepayne/dictim/wiki/Dictim-Syntax) under the dictim syntax.
+
+The key difference with dictim.server to dictim is that dictim.server accepts the json-ic form of dictim.
 
 You should send a POST request to the `/dictim` route with your dictim.
 
-For example
+### Return values
+
+Successful requests will result into a 200 response with a Content-Type of `image/svg+xml` and the svg of the image in the body.
+
+Unsuccessful requests will result in a 400 response with the error message as the body.
+
+A 401 Internal Server Error generally means that the json sent was invalid.
+
+## Tutorial
+
+A quick example:
 
 ```bash
 curl --header "Content-Type: application/json" \
