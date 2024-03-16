@@ -783,6 +783,7 @@ As a bonus and final step, let's add a conditional styling instruction under `"n
 
 <details>
 <summary>Full curl command</summary>
+
 ```bash
 curl --header "Content-Type: application/json" \
   --request POST \
@@ -940,4 +941,5 @@ curl --header "Content-Type: application/json" \
 	}' \
   http://localhost:5001/graph > out.svg
 ```
+
 </details>
