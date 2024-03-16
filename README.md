@@ -1,5 +1,5 @@
 # dictim.server
-Diagrams as code.
+Diagrams as data.
 
 ## What is it?
 
@@ -14,7 +14,7 @@ A one stop shop for:    dictim -> d2 -> diagram
 
 ## Why
 
-Diagrams as code.
+Diagrams as data.
 
 Producing diagrams dynamically from data is a powerful way to understand a complex system. Not only does it automate away a lot of work, but being dynamic opens up new possibilities. Imagine being able to highlight certain aspects of your diagram during a presentation, change the scope of the data shown in response to a question or group/ slice the data in a different way as the thought occurs.
 
