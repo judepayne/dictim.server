@@ -1,30 +1,34 @@
 # dictim.server
-Dictim dockerized. Call a web server to convert dictim into svg!
+Diagrams as code.
 
 ## What is it?
 
 [d2](https://github.com/terrastruct/d2) by Terrastruct is a text domain specific language for expressing a diagram. It is also a Go executable which converts the d2 text into a diagram itself e.g. svg, png etc.
 
-[dictim](https://github.com/judepayne/dictim) is a data-ized version of d2, for when you want to describe your diagram with data rather than text e.g. if you already have it sitting in a database. It will compile data in dictim format into d2 (and back again).
+[dictim](https://github.com/judepayne/dictim) is a data-ized version of d2, for when you want to describe your diagram as data rather than text. If you already have the data that describes a diagram in a database or source control. Like d2, dictim is also a compiler which converts the dictim format into d2.
 
 **dictim server** is a handy deployable webserver which offers a REST api to convert dictim in json form into diagrams.
+
+A one stop shop for:    dictim -> d2 -> diagram
 
 
 ## Why
 
-Being able to produce diagrams dynamically from data is a powerful way to understand a complex system. Not only does it automate away a lot of work, but being dynamic opens up new possibilities. Imagine being able to highlight certain aspects of your diagram during a presentation, change the scope of the data shown in response to a question or group/ slice the data in a different way as the thought occurs. This is a power of data-driven diagrams.
+Diagrams as code.
+
+Producing diagrams dynamically from data is a powerful way to understand a complex system. Not only does it automate away a lot of work, but being dynamic opens up new possibilities. Imagine being able to highlight certain aspects of your diagram during a presentation, change the scope of the data shown in response to a question or group/ slice the data in a different way as the thought occurs. Ordinary diagrams go stale over time, but data driven diagrams are generated at the point that you need them from the most up to date data.
 
 
 ## Gallery
 
-<table>
+<table style="float:middle">
   <tr>
     <td><img src="images/gallery1.svg" width=250 height=250></td>
     <td><img src="images/gallery2.svg" width=250 height=250></td>
     <td><img src="images/gallery3.svg" width=250 height=250></td>
   </tr>
   <tr>
-    <td><img src="images/gallery7.svg" width=250 height=250></td>
+    <td><img src="images/gallery6.svg" width=250 height=250></td>
     <td><img src="images/gallery5.svg" width=250 height=250></td>
     <td><img src="images/gallery6.svg" width=250 height=250></td>
   </tr>
@@ -35,17 +39,17 @@ Being able to produce diagrams dynamically from data is a powerful way to unders
 
 Currently there are two functions.
 - The high-level graph api on the `/graph` route for boxes and arrows diagrams. [Tutorial and Reference](graph_ref.md)
-- The low-level dictim api on the `/dictim` route which can be used to create several different styles of diagrams, including sequence diagrams. [Tutorial and Reference](dictim_ref.md)
+- The low-level dictim api on the `/dictim` route which can be used to create all of the diagram styles that d2 provides (including sequence diagrams). [Tutorial and Reference](dictim_ref.md)
 
 
 **TODO** A todo is to build a second high-level api dedicated to sequence diagrams.
 
 
-## Deploying
+## Deploy
 
-There are two options for deploying dictim server: as a standalone microservice jar or as a container (has the microservice running within it).
+There are two options for deploying dictim server: as a standalone microservice jar or as a container that runs the microservice.
 
-### Configuration before building
+### Configure
 
 Before building one of these options, you might wish to configure the build..
 
@@ -95,9 +99,15 @@ From another terminal you can use curl to post the example command above to the 
 
 ### As a container
 
+First let's clone the ditectory and cd into it:
+
+```bash
+git clone https://github.com/judepayne/dictim.server.git && cd dictim.server
+```
+
 In the dictim.server folder there is a `Dockerfile` that can be used to build a container than builds the standalone webserver and downloads and installs d2 so it's a complete solution for hosting dictim.server.
 
-From the dictim.server directory that you cloned locally, first let's build the container image. (Of course, you should have Docker or Podman or another container management solution installed)
+Let's build the container image. You should have Docker or Podman or another container management solution installed that is api compatible with Docker.
 
 ```bash
 ./build.sh
@@ -116,9 +126,9 @@ Let's start the new container
 ./run.sh
 ```
 
-(You can pass in the name of an alternative container management program to the script as before.)
+You can pass in the name of an alternative container management program to the script as before.
 
-That will start the container and the webserver within it listening on port 5001 (or the port you've set) exposed through to your local machine.
+That will start the container and the webserver within it listening on port 5001 (or the port you've set in the configure step) exposed through to your local machine.
 
 Try posting to the webserver using any of the sample `curl` commands in src/app/sample.txt
 
@@ -135,4 +145,3 @@ Try posting to the webserver using any of the sample `curl` commands in src/app/
 Copyright © 2024 Jude Payne
 
 Distributed under the [MIT License](http://opensource.org/licenses/MIT)
- 
