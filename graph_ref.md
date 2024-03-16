@@ -285,6 +285,7 @@ is an architecture diagram that was built from this diagram spec..
 	  }
 	}
 ```
+
 </details>
 
 
@@ -551,6 +552,7 @@ curl --header "Content-Type: application/json" \
 	}' \
   http://localhost:5001/graph > out.svg
 ```
+
 </details>
 
 
@@ -612,6 +614,7 @@ Now we're back at the original diagram!
 
 <details>
 <summary>Full curl command</summary>
+
 ```bash
 curl --header "Content-Type: application/json" \
   --request POST \
@@ -756,6 +759,7 @@ curl --header "Content-Type: application/json" \
 	}' \
   http://localhost:5001/graph > out.svg
 ```
+
 </details>
 
 
