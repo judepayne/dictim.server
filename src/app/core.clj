@@ -55,7 +55,10 @@
       
       (try
         (let [d2 (graph/graph-spec->d2 spec)
-              svg (d2->svg d2)]
+              svg (let [svg (d2->svg d2)]
+                    (if (or (nil? svg) (= "" svg))
+                      (throw (Exception. "The d2 engine returned nothing."))
+                      svg))]
           {:status 200
            :headers {"Content-Type" "image/svg+xml"}
            :body svg})
