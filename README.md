@@ -3,7 +3,7 @@ Diagrams as data.
 
 ## What is it?
 
-[d2](https://github.com/terrastruct/d2) by Terrastruct is a text domain specific language for expressing a diagram. It is also a Go executable which converts the d2 text into a diagram itself e.g. svg, png etc.
+[d2](https://github.com/terrastruct/d2) by Terrastruct is a text domain specific language for expressing a diagram. It is also a native executable which converts the d2 text into the diagram itself e.g. svg, png etc.
 
 [dictim](https://github.com/judepayne/dictim) is a data-ized version of d2, for when you want to describe your diagram as data rather than text. If you already have the data that describes a diagram in a database or source control. Like d2, dictim is also a compiler which converts the dictim format into d2.
 
