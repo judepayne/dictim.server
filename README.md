@@ -16,7 +16,9 @@ A one stop shop for:    dictim -> d2 -> diagram
 
 Diagrams as code.
 
-Producing diagrams dynamically from data is a powerful way to understand a complex system. Not only does it automate away a lot of work, but being dynamic opens up new possibilities. Imagine being able to highlight certain aspects of your diagram during a presentation, change the scope of the data shown in response to a question or group/ slice the data in a different way as the thought occurs. Ordinary diagrams go stale over time, but data driven diagrams are generated at the point that you need them from the most up to date data.
+Producing diagrams dynamically from data is a powerful way to understand a complex system. Not only does it automate away a lot of work, but being dynamic opens up new possibilities. Imagine being able to highlight certain aspects of your diagram during a presentation, change the scope of the data shown in response to a question or group/ slice the data in a different way as the thought occurs.
+
+Ordinary diagrams go stale over time, but data driven diagrams are generated at the point that you need them from the most up to date data.
 
 
 ## Gallery
@@ -29,8 +31,8 @@ Producing diagrams dynamically from data is a powerful way to understand a compl
   </tr>
   <tr>
     <td><img src="images/gallery6.svg" width=250 height=250></td>
-    <td><img src="images/gallery5.svg" width=250 height=250></td>
-    <td><img src="images/gallery6.svg" width=250 height=250></td>
+    <td><img src="images/gallery8" width=250 height=250></td>
+    <td><img src="images/gallery7.svg" width=250 height=250></td>
   </tr>
 </table>
 
@@ -38,7 +40,7 @@ Producing diagrams dynamically from data is a powerful way to understand a compl
 ## API
 
 Currently there are two functions.
-- The high-level graph api on the `/graph` route for boxes and arrows diagrams. [Tutorial and Reference](graph_ref.md)
+- The high-level graph api on the `/graph` route for boxes and arrows diagrams. (Technically called network diagrams) [Tutorial and Reference](graph_ref.md)
 - The low-level dictim api on the `/dictim` route which can be used to create all of the diagram styles that d2 provides (including sequence diagrams). [Tutorial and Reference](dictim_ref.md)
 
 
@@ -57,12 +59,15 @@ In the `resources` directory are a couple of files that you might wish to change
 
 - PORT contains the port that the microservice runs on.
 
+- THEME the color scheme of the diagram. See the [options](https://d2lang.com/tour/themes/).
+
 - LAYOUT_ENGINE this is the layout engine used by d2. This is defaulted to `dagre`. `elk` is another free option, but for most use cases I find that Terrastruct's proprietary `tala` engine works best. The set up of tala is slightly more involved since in order to produce diagrams without a watermark, tala requires a licensed api token that you can obtain from Terrastruct.
 
 In the container based build option, tala is installed into the container by default. For a serious container based production setup, we would recommend using Docker secrets or similar to mange the tala api token.
 
 For a quick and very insecure solution (e.g. for testing), put your tala api token into the docker/tala.env file before building the container.
 
+Currently, the theme and layout engine are configure per instance of the dictim.server microservice rather than per call to the microservice. This is a choice to help foster a standardized look and feel across a team. If you wish to use more than layout, or theme, build multiple instances of the microservice.
 
 ### Standalone webserver jar
 

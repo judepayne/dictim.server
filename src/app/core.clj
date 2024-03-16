@@ -31,12 +31,15 @@
 (def port (Integer. (slurp (io/resource "PORT"))))
 
 
+(def theme (Integer. (slurp (io/resource "THEME"))))
+
+
 ;; correct command line is:   echo "x -> y: hello" | d2 --layout tala -
 (defn d2->svg
   "Takes a string of d2, and returns a string containing SVG."
   [d2 & {:keys [path layout] :or {path path-to-d2
                                   layout layout-engine}}]
-  (let [{:keys [out err]} (sh/sh path "--layout" layout "-" :in d2)]
+  (let [{:keys [out err]} (sh/sh path "--layout" layout "--theme" theme  "-" :in d2)]
     (or
      out
      (throw (IllegalArgumentException. ^String (str "d2 engine error: "(format-error d2 err)))))))
