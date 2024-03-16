@@ -9,6 +9,8 @@
     (:gen-class))
 
 
+;; TODO Trap when json is badly formed.
+
 ;; Shell out to d2 executable
 (defn- format-error [s err]
   (apply str
@@ -25,13 +27,13 @@
 (def path-to-d2 "d2")
 
 
-(def layout-engine (slurp (io/resource "LAYOUT_ENGINE")))
+(def layout-engine (or (slurp (io/resource "LAYOUT_ENGINE")) "dagre"))
 
 
-(def port (Integer. (slurp (io/resource "PORT"))))
+(def port (or (Integer. (slurp (io/resource "PORT"))) 5051))
 
 
-(def theme (Integer. (slurp (io/resource "THEME"))))
+(def theme (str (or (slurp (io/resource "THEME")) 0)))
 
 
 ;; correct command line is:   echo "x -> y: hello" | d2 --layout tala -
@@ -39,7 +41,7 @@
   "Takes a string of d2, and returns a string containing SVG."
   [d2 & {:keys [path layout] :or {path path-to-d2
                                   layout layout-engine}}]
-  (let [{:keys [out err]} (sh/sh path "--layout" layout "--theme" theme  "-" :in d2)]
+  (let [{:keys [out err]} (sh/sh path "--layout" layout "--theme" theme "-" :in d2)]
     (or
      out
      (throw (IllegalArgumentException. ^String (str "d2 engine error: "(format-error d2 err)))))))
@@ -50,6 +52,7 @@
 
   (if json-params
     (let [spec (graph/fix-diagram-specs json-params)]
+      
       (try
         (let [d2 (graph/graph-spec->d2 spec)
               svg (d2->svg d2)]

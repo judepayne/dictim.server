@@ -36,6 +36,8 @@ curl --header "Content-Type: application/json" \
   http://localhost:5001/dictim
 
 
+;; graph tutorial diagrams
+
 curl --header "Content-Type: application/json" \
   --request POST \
   --data '{
@@ -178,3 +180,408 @@ curl --header "Content-Type: application/json" \
 	  }
 	}' \
   http://localhost:5001/graph
+
+
+curl --header "Content-Type: application/json" \
+  --request POST \
+  --data '{"nodes":[
+		     {
+		       "id":"app12872",
+		       "name":"Trade pad",
+		       "owner":"Lakshmi",
+		       "dept":"Finance",
+		       "functions":[
+			 "Position Keeping",
+			 "Quoting"
+		       ],
+		       "tco":1200000,
+		       "process":"p.112"
+		     }],
+            "node->key": "id"
+		 }' \
+  http://localhost:5001/graph
+
+
+curl --header "Content-Type: application/json" \
+  --request POST \
+  --data '{"nodes":[
+		     {
+		       "id":"app12872",
+		       "name":"Trade pad",
+		       "owner":"Lakshmi",
+		       "dept":"Finance",
+		       "functions":[
+			 "Position Keeping",
+			 "Quoting"
+		       ],
+		       "tco":1200000,
+		       "process":"p.112"
+		     }
+		     {
+		       "id":"app12874",
+		       "name":"Crypto Bot",
+		       "owner":"Joesph",
+		       "dept":"Equities",
+		       "functions":[
+			 "Accounting",
+			 "Booking"
+		       ],
+		       "tco":500000,
+		       "process":"p.112"
+		     }],
+	    "edges":[
+	              {
+			"src":"app12874",
+			"dest":"app12872",
+			"data-type":"instructions"
+		      }],
+            "node->key": "id"
+		 }' \
+  http://localhost:5001/graph
+
+
+curl --header "Content-Type: application/json" \
+  --request POST \
+  --data '{"nodes":[
+		     {
+		       "id":"app12872",
+		       "name":"Trade pad",
+		       "owner":"Lakshmi",
+		       "dept":"Finance",
+		       "functions":[
+			 "Position Keeping",
+			 "Quoting"
+		       ],
+		       "tco":1200000,
+		       "process":"p.112"
+		     },
+		     {
+		       "id":"app12874",
+		       "name":"Crypto Bot",
+		       "owner":"Joesph",
+		       "dept":"Equities",
+		       "functions":[
+			 "Accounting",
+			 "Booking"
+		       ],
+		       "tco":500000,
+		       "process":"p.112"
+		     }],
+	    "edges":[
+	              {
+			"src":"app12874",
+			"dest":"app12872",
+			"data-type":"instructions"
+		      }],
+	    "node->key": "id",
+	    "node-specs":{
+			   "labels":[
+				      [
+					{
+					  "key":"name"
+					}
+				      ]
+				    ]
+			 }
+		 }' \
+  http://localhost:5001/graph
+
+
+curl --header "Content-Type: application/json" \
+  --request POST \
+  --data '{
+  "nodes":[
+	    {
+	      "id":"app12872",
+	      "name":"Trade pad",
+	      "owner":"Lakshmi",
+	      "dept":"Finance",
+	      "functions":[
+		"Position Keeping",
+		"Quoting"
+	      ],
+	      "tco":1200000,
+	      "process":"p.112"
+	    },
+	    {
+	      "id":"app12873",
+	      "name":"Data Source",
+	      "owner":"India",
+	      "dept":"Securities",
+	      "functions":[
+		"Booking",
+		"Order Mgt"
+	      ],
+	      "tco":1100000,
+	      "process":"p.114"
+	    },
+	    {
+	      "id":"app12874",
+	      "name":"Crypto Bot",
+	      "owner":"Joesph",
+	      "dept":"Equities",
+	      "functions":[
+		"Accounting",
+		"Booking"
+	      ],
+	      "tco":500000,
+	      "process":"p.112"
+	    },
+	    {
+	      "id":"app12875",
+	      "name":"Data Solar",
+	      "owner":"Deepak",
+	      "dept":"Securities",
+	      "functions":[
+		"Position Keeping",
+		"Data Master"
+	      ],
+	      "tco":1000000,
+	      "process":"p.114"
+	    },
+	    {
+	      "id":"app12876",
+	      "name":"Data Solar",
+	      "owner":"Lakshmi",
+	      "dept":"Risk",
+	      "functions":[
+		"Accounting",
+		"Data Master"
+	      ],
+	      "tco":1700000,
+	      "process":"p.114"
+	    }
+	  ],
+	  "edges":[
+	    {
+	      "src":"app12874",
+	      "dest":"app12875",
+	      "data-type":"security reference"
+	    },
+	    {
+	      "src":"app12874",
+	      "dest":"app12876",
+	      "data-type":"quotes"
+	    },
+	    {
+	      "src":"app12875",
+	      "dest":"app12875",
+	      "data-type":"instructions"
+	    },
+	    {
+	      "src":"app12874",
+	      "dest":"app12872",
+	      "data-type":"instructions"
+	    },
+	    {
+	      "src":"app12875",
+	      "dest":"app12874",
+	      "data-type":"client master"
+	    },
+	    {
+	      "src":"app12875",
+	      "dest":"app12874",
+	      "data-type":"allocations"
+	    }
+	  ],
+	  "node->key":"id",
+	  "node-specs":{
+	    "labels":[
+	      [
+		{
+		  "key":"owner"
+		},
+		[
+		  "equals",
+		  "dept",
+		  "Equities"
+		]
+	      ],
+	      [
+		{
+		  "key":"name"
+		}
+	      ]
+	    ],
+	    "styles":[
+	      [
+		{
+		  "fill":"'#f4a261'"
+		},
+		[
+		  "contains",
+		  "functions",
+		  "Accounting"
+		]
+	      ]
+	    ]
+	  },
+	  "edge-specs":{
+	    "labels":[
+	      [
+		{
+		  "key":"data-type"
+		}
+	      ]
+	    ]
+	  }
+	}' \
+  http://localhost:5001/graph > out.svg
+
+
+
+curl --header "Content-Type: application/json" \
+  --request POST \
+  --data '{
+  "nodes":[
+	    {
+	      "id":"app12872",
+	      "name":"Trade pad",
+	      "owner":"Lakshmi",
+	      "dept":"Finance",
+	      "functions":[
+		"Position Keeping",
+		"Quoting"
+	      ],
+	      "tco":1200000,
+	      "process":"p.112"
+	    },
+	    {
+	      "id":"app12873",
+	      "name":"Data Source",
+	      "owner":"India",
+	      "dept":"Securities",
+	      "functions":[
+		"Booking",
+		"Order Mgt"
+	      ],
+	      "tco":1100000,
+	      "process":"p.114"
+	    },
+	    {
+	      "id":"app12874",
+	      "name":"Crypto Bot",
+	      "owner":"Joesph",
+	      "dept":"Equities",
+	      "functions":[
+		"Accounting",
+		"Booking"
+	      ],
+	      "tco":500000,
+	      "process":"p.112"
+	    },
+	    {
+	      "id":"app12875",
+	      "name":"Data Solar",
+	      "owner":"Deepak",
+	      "dept":"Securities",
+	      "functions":[
+		"Position Keeping",
+		"Data Master"
+	      ],
+	      "tco":1000000,
+	      "process":"p.114"
+	    },
+	    {
+	      "id":"app12876",
+	      "name":"Data Solar",
+	      "owner":"Lakshmi",
+	      "dept":"Risk",
+	      "functions":[
+		"Accounting",
+		"Data Master"
+	      ],
+	      "tco":1700000,
+	      "process":"p.114"
+	    }
+	  ],
+	  "edges":[
+	    {
+	      "src":"app12874",
+	      "dest":"app12875",
+	      "data-type":"security reference"
+	    },
+	    {
+	      "src":"app12874",
+	      "dest":"app12876",
+	      "data-type":"quotes"
+	    },
+	    {
+	      "src":"app12875",
+	      "dest":"app12875",
+	      "data-type":"instructions"
+	    },
+	    {
+	      "src":"app12874",
+	      "dest":"app12872",
+	      "data-type":"instructions"
+	    },
+	    {
+	      "src":"app12875",
+	      "dest":"app12874",
+	      "data-type":"client master"
+	    },
+	    {
+	      "src":"app12875",
+	      "dest":"app12874",
+	      "data-type":"allocations"
+	    }
+	  ],
+	  "node->key":"id",
+	  "node->container":"dept",
+	  "container->parent":{
+	    "Finance":"2LOD",
+	    "Risk":"2LOD",
+	    "Securities":"FO",
+	    "Equities":"FO",
+	    "FO":"Company",
+	    "2LOD":"Company"
+	  },
+	  "node-specs":{
+	    "labels":[
+	      [
+		{
+		  "key":"owner"
+		},
+		[
+		  "equals",
+		  "dept",
+		  "Equities"
+		]
+	      ],
+	      [
+		{
+		  "key":"name"
+		}
+	      ]
+	    ],
+	    "styles":[
+	      [
+		{
+		  "fill":"'#f4a261'",
+		  "border-radius":8
+		},
+		[
+		  "contains",
+		  "functions",
+		  "Accounting"
+		]
+	      ]
+	    ]
+	  },
+	  "edge-specs":{
+	    "labels":[
+	      [
+		{
+		  "key":"data-type"
+		}
+	      ]
+	    ]
+	  },
+	  "container->attrs":{
+	    "Securities":{
+	      "style.fill":"'#d6edd5'"
+	    }
+	  }
+	}' \
+  http://localhost:5001/graph > out.svg

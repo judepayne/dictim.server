@@ -198,7 +198,7 @@
             (conj errors "The diagram spec must include a 'nodes' key.")
             errors)
           (if-not (:node->key spec)
-            (conj errors "The diagram spec must include a 'node->id' key.")
+            (conj errors "The diagram spec must include a 'node->key' key.")
             errors)
           ;; edge format check
           (if-let [edges (:edges spec)]
@@ -347,6 +347,15 @@
     resolved-spec)))
 
 
+(defn- add-entries [& entries]
+  (reduce (fn [acc [k v]]
+            (if-not v
+              acc
+              (assoc acc k v)))
+          nil
+          entries))
+
+
 (defmacro ^{:private true} spec-fn
   "Converts a node->attrs/ edge-attrs expression that use data to 
   express specs and conditions into a function."
@@ -355,9 +364,8 @@
      (let [label# (:labels ~m)
            style# (:styles ~m)
            lbl# (when label# [:label (first-true (specs item# :label label#))])
-           stl# (when style# [:style (first-true (specs item# :style style#))])
-           res# (remove nil? (concat lbl# stl#))]
-       (apply assoc {} res#))))
+           stl# (when style# [:style (first-true (specs item# :style style#))])]
+       (add-entries lbl# stl#))))
 
 
 ;; example diaagram spec
@@ -433,12 +441,11 @@
 
   (when validate?
     (when-let [errors (graph-spec-errors diag)]
-      (println errors)
       (let [error-msg (apply str (interpose
                                   "\n - "
                                   (cons "Errors found during diagram spec validation:" errors)))]
         (throw (Exception. error-msg)))))
-  
+
   (let [nodes (-> diag :nodes)
         edges (-> diag :edges)
         node->key (-> diag :node->key)
@@ -453,8 +460,8 @@
                               :node->attrs node-fn
                               :edge->attrs edge-fn
                               :cluster->attrs container->attrs}
-                             node->container (assoc :node->cluster node->container)
-                             container->parent (assoc :cluster->parent container->parent))
+                           node->container (assoc :node->cluster node->container)
+                           container->parent (assoc :cluster->parent container->parent))
         dictim (g/graph->dictim nodes edges dictim-fn-params)
         dictim' (if directives (cons directives dictim) dictim)]
     (apply c/d2 dictim')))
@@ -476,9 +483,16 @@
   (json/write-str diagram-spec))
 
 
-(defn- convert-element [element]
+;; cheshire seems to single quotes from single-quoted strings.
+(defn- single-quote-hex-color [maybe-color]
+  (if (and (string? maybe-color) (clojure.string/starts-with? maybe-color "#"))
+    (str "'" maybe-color "'")
+    maybe-color))
+
+
+(defn- convert-element [type element]
   (cond
-    (map? element)
+    (and (= type :labels) (map? element))
     (into {} (map (fn [[k v]] [k (keyword v)]) element))
 
     (vector? element)
@@ -487,14 +501,14 @@
     :else element))
 
 
-(defn- convert-specs [specs]
-  (mapv #(mapv convert-element %) specs))
+(defn- convert-specs [type specs]
+  (mapv #(mapv (fn [spec] (convert-element type spec)) %) specs))
 
 
 (defn value-fn [[k v]]
   (cond
     (or (= k :labels) (= k :styles))
-    [k (convert-specs v)]
+    [k (convert-specs k v)]
 
     (or (= k :node->container) (= k :node->key))
     [k (keyword v)]
@@ -503,7 +517,8 @@
     [k (into {}
             (map (fn [[k v]] [(name k) v]) v))]
 
-    :else [k v]))
+    ;;cheshire seems to eliminate single-quote strings inside double-quoted strings
+    :else [k (single-quote-hex-color v)]))
 
 
 (defn fix-maps
