@@ -1,6 +1,8 @@
 # dictim.server
 Diagrams as data.
 
+[![CircleCI](https://dl.circleci.com/status-badge/img/gh/judepayne/dictim.server/tree/main.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/judepayne/dictim.server/tree/main)
+
 ## What is it?
 
 [d2](https://github.com/terrastruct/d2) by Terrastruct is a text domain specific language for expressing a diagram. It is also a native executable which converts the d2 text into the diagram itself e.g. svg, png etc.
@@ -141,7 +143,6 @@ Try posting to the webserver using any of the sample `curl` commands in resource
 **TODO**
 - Consider building a high level api for sequence diagrams as `/graph` is for network diagrams.
 - Arbitrary nesting of conditions
-- circleci integration
 
 
 ## License
