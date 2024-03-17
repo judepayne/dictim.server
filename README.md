@@ -40,8 +40,8 @@ Ordinary diagrams go stale over time, but data driven diagrams are generated at 
 ## API
 
 Currently there are two functions.
-- The high-level graph api on the `/graph` route for boxes and arrows diagrams. (Technically called network diagrams) [Tutorial and Reference](graph_ref.md)
-- The low-level dictim api on the `/dictim` route which can be used to create all of the diagram styles that d2 provides (including sequence diagrams). [Tutorial and Reference](dictim_ref.md)
+- The high-level graph api on the `/graph` route for boxes and arrows diagrams. (Technically called network diagrams) [Tutorial and Reference](docs/graph_ref.md)
+- The low-level dictim api on the `/dictim` route which can be used to create all of the diagram styles that d2 provides (including sequence diagrams). [Tutorial and Reference](docs/dictim_ref.md)
 
 
 **TODO** A todo is to build a second high-level api dedicated to sequence diagrams.
@@ -69,7 +69,7 @@ In the `resources` directory are a few configuration files that you might wish t
 
     Currently, the theme and layout engine are configure per instance of the dictim.server microservice rather than per call to the microservice. This is a choice to help foster a standardized look and feel across a team. If you wish to use more than layout, or theme, build multiple instances of the microservice.
 
-- SSLPORT Basic (self signed certificate) https support is provided through `resources/jetty-keystore`. To enable https in the container build, please read the `Dockerfile` to uncomment the line that exposes your chosen ssl port. In `src/app/sample.txt` there's an example `curl` command that tests this basic https setup.
+- SSLPORT Basic (self signed certificate) https support is provided through `resources/jetty-keystore`. To enable https in the container build, please read the `Dockerfile` to uncomment the line that exposes your chosen ssl port. In `resources/sample.txt` there's an example `curl` command that tests this basic https setup.
 
 ### Standalone webserver jar
 
@@ -82,8 +82,6 @@ First let's clone the ditectory and cd into it:
 ```bash
 git clone https://github.com/judepayne/dictim.server.git && cd dictim.server
 ```
-
-By default, the webserver that you're about to build runs on port 5001. If you wish the change that, edit the entry in src/app/core.clj.
 
 then, build the standalone jar file:
 
@@ -117,27 +115,27 @@ In the dictim.server folder there is a `Dockerfile` that can be used to build a 
 Let's build the container image. You should have Docker or Podman or another container management solution installed that is api compatible with Docker.
 
 ```bash
-./build.sh
+./script/build.sh
 ```
 
 This script accept the container management program as an argument, defaults to 'docker', but if you you another container manager, e.g. podman, you can pass that as an argument to the script e.g.
 
 ```bash
-./build.sh podman
+./script/build.sh podman
 ```
 
 
 Let's start the new container
 
 ```bash
-./run.sh
+./script/run.sh
 ```
 
 You can pass in the name of an alternative container management program to the script as before.
 
 That will start the container and the webserver within it listening on port 5001 (or the port you've set in the configure step) exposed through to your local machine.
 
-Try posting to the webserver using any of the sample `curl` commands in src/app/sample.txt
+Try posting to the webserver using any of the sample `curl` commands in resources/sample.txt
 
 
 **TODO**
