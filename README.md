@@ -7,7 +7,7 @@ Diagrams as data.
 
 [dictim](https://github.com/judepayne/dictim) is a data-ized version of d2, for when you want to describe your diagram as data rather than text. If you already have the data that describes a diagram in a database or source control. Like d2, dictim is also a compiler which converts the dictim format into d2.
 
-**dictim server** is a handy deployable webserver which offers a REST api to convert dictim in json form into diagrams.
+**dictim server** is a handy deployable microservice which offers a REST api to convert dictim in json form into diagrams.
 
 A one stop shop for:    dictim -> d2 -> diagram
 
