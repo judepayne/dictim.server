@@ -740,3 +740,26 @@ curl --header "Content-Type: application/json" \
 	    }
 	  }
 	}"
+
+
+;; Test https/ ssl support in the container.
+;; See readme on how to configure
+
+curl --header "Content-Type: application/json" \
+  --request POST -k \
+  --data '{"nodes":[
+                     {
+                       "id":"app12872",
+                       "name":"Trade pad",
+                       "owner":"Lakshmi",
+                       "dept":"Finance",
+                       "functions":[
+                         "Position Keeping",
+                         "Quoting"
+                       ],
+                       "tco":1200000,
+                       "process":"p.112"
+                     }],
+            "node->key": "id"
+                 }' \
+  https://localhost:5002/graph

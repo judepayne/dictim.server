@@ -6,4 +6,11 @@ portfile="resources/PORT"
 
 port=$(cat "$portfile")
 
-$containerprog build --build-arg="PORT=$port" -t dictim-server .
+sslportfile="resources/SSLPORT"
+
+sslport=$(cat "$sslportfile")
+
+$containerprog build \
+	       --build-arg="PORT=$port" \
+	       --build-arg="SSLPORT=$sslport" \
+	       -t dictim-server .

@@ -55,7 +55,7 @@ There are two options for deploying dictim server: as a standalone microservice 
 
 Before building one of these options, you might wish to configure the build..
 
-In the `resources` directory are a couple of files that you might wish to change.
+In the `resources` directory are a few configuration files that you might wish to change.
 
 - PORT contains the port that the microservice runs on.
 
@@ -68,6 +68,8 @@ In the container based build option, tala is installed into the container by def
 For a quick and very insecure solution (e.g. for testing), put your tala api token into the docker/tala.env file before building the container.
 
 Currently, the theme and layout engine are configure per instance of the dictim.server microservice rather than per call to the microservice. This is a choice to help foster a standardized look and feel across a team. If you wish to use more than layout, or theme, build multiple instances of the microservice.
+
+- SSLPORT Basic (self signed certificate) https support is provided through `resources/jetty-keystore`. To enable https in the container build, please read the `Dockerfile` to uncomment the line that exposes your chosen ssl port. In `src/app/sample.txt' there's an example `curl` command that tests this basic https setup.
 
 ### Standalone webserver jar
 
@@ -139,7 +141,6 @@ Try posting to the webserver using any of the sample `curl` commands in src/app/
 
 
 **TODO**
-- Switch from using http to https
 - Consider building a high level api for sequence diagrams as `/graph` is for network diagrams.
 - Arbitrary nesting of conditions
 

@@ -27,13 +27,23 @@
 (def path-to-d2 "d2")
 
 
-(def layout-engine (or (slurp (io/resource "LAYOUT_ENGINE")) "dagre"))
+(defmacro try-read
+  "A macro that wraps an expr that can fail in a try .. catch"
+  [expr]
+  `(try ~expr
+        (catch Exception e# false)))
 
 
-(def port (or (Integer. (slurp (io/resource "PORT"))) 5051))
+(def layout-engine (or (try-read (slurp (io/resource "LAYOUT_ENGINE"))) "dagre"))
 
 
-(def theme (str (or (slurp (io/resource "THEME")) 0)))
+(def port (or (try-read (Integer. (slurp (io/resource "PORT")))) 5001))
+
+
+(def ssl-port (or (try-read (Integer. (slurp (io/resource "SSLPORT")))) 5002))
+
+
+(def theme (str (or (try-read (slurp (io/resource "THEME"))) 0)))
 
 
 ;; correct command line is:   echo "x -> y: hello" | d2 --layout tala -
@@ -96,10 +106,17 @@
 
 (def service-map
   (-> {::http/routes routes
-       ::http/type :immutant
        ::http/host "0.0.0.0"
        ::http/join? false
-       ::http/port port}))
+       ::http/port port
+       ::http/type :jetty
+       ::http/container-options
+       {:h2 true
+        :ssl? true
+        :ssl-port ssl-port
+        :keystore "resources/jetty-keystore"
+        :key-password "dictim.server"
+        :security-provider "Conscrypt"}}))
 
 
 (defn -main [] (-> service-map http/create-server http/start)) ; Server Instance
