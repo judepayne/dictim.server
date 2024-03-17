@@ -16,7 +16,7 @@ A one stop shop for:    dictim -> d2 -> diagram
 
 Diagrams as data.
 
-Producing diagrams dynamically from data is a powerful way to understand a complex system. Not only does it automate away a lot of work, but being dynamic opens up new possibilities. Imagine being able to highlight certain aspects of your diagram during a presentation, change the scope of the data shown in response to a question or group/ slice the data in a different way as the thought occurs.
+Producing diagrams dynamically from data is a powerful way to understand a complex system. Not only does it automate away a lot of work, but also opens up new possibilities. Imagine being able to highlight certain aspects of your diagram during a presentation, change the scope of the data shown in response to a question or group/ slice the data in a different way as the thought occurs.
 
 Ordinary diagrams go stale over time, but data driven diagrams are generated at the point that you need them from the most up to date data.
 
@@ -143,6 +143,7 @@ Try posting to the webserver using any of the sample `curl` commands in src/app/
 **TODO**
 - Consider building a high level api for sequence diagrams as `/graph` is for network diagrams.
 - Arbitrary nesting of conditions
+- circleci integration
 
 
 ## License
