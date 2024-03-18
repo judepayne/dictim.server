@@ -1,0 +1,12 @@
+[main] INFO org.eclipse.jetty.util.log - Logging initialized @1081ms to org.eclipse.jetty.util.log.Slf4jLog
+[main] INFO org.eclipse.jetty.server.Server - jetty-9.4.53.v20231009; built: 2023-10-09T12:29:09.265Z; git: 27bde00a0b95a1d5bbee0eae7984f891d2d0f8c9; jvm 21.0.2
+[main] INFO org.eclipse.jetty.server.handler.ContextHandler - Started o.e.j.s.ServletContextHandler@11eec06b{/,null,AVAILABLE}
+[main] INFO org.eclipse.jetty.server.AbstractConnector - Started ServerConnector@7eb27768{HTTP/1.1, (http/1.1, h2c)}{0.0.0.0:5001}
+[main] INFO org.eclipse.jetty.util.ssl.SslContextFactory - x509=X509@11826398(1,h=[dictim.server],a=[],w=[]) for Server@6c5ca0b6[provider=Conscrypt,keyStore=file:///Users/jude/Library/CloudStorage/Dropbox/Projects/clojure/dictim.server/resources/jetty-keystore,trustStore=null]
+[main] INFO org.eclipse.jetty.util.ssl.SslContextFactory - Unable to get KeyManagerFactory instance for algorithm [SunX509] on provider [Conscrypt], using default
+[main] INFO org.eclipse.jetty.util.ssl.SslContextFactory - Unable to get TrustManagerFactory instance for algorithm [PKIX] on provider [Conscrypt], using default
+[main] INFO org.eclipse.jetty.util.ssl.SslContextFactory - Unable to get SSLContext instance for protocol [TLS] on provider [Conscrypt], using default
+[main] INFO org.eclipse.jetty.server.AbstractConnector - Started ServerConnector@42a0786f{SSL, (ssl, http/1.1)}{0.0.0.0:5002}
+[main] INFO org.eclipse.jetty.server.Server - Started @1328ms
+[qtp1726169577-63] INFO io.pedestal.http - {:msg "POST /graph", :line 80}
+[qtp1726169577-68] INFO io.pedestal.http - {:msg "POST /graph", :line 80}
