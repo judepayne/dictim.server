@@ -33,11 +33,11 @@ jobs:
           command: |
             java -jar target/dictimserver-standalone.jar
           background: true
-      # we install bb now to give the webserver time to start
       - run:
           name: install babashka
           command: |
             sudo bash < <(curl -s https://raw.githubusercontent.com/babashka/babashka/master/install)
+      # give the webserver time to start ..
       - run:
           name: sleep 5 seconds
           command: sleep 5
