@@ -1,7 +1,7 @@
 version: 2.1
 
 jobs:
-  test:
+  test-jar:
     docker:
       - image: cimg/clojure:1.11.1-openjdk-17.0
 
@@ -27,13 +27,31 @@ jobs:
       - run:
           name: build JAR
           command: |
-            clj -T:build uber
+            clojure -T:build uber
+      - run:
+          name: run JAR
+          command: |
+            java -jar target/dictimserver-standalone.jar
+      # we install bb now to give the webserver time to start
+      - run:
+          name: install babashka
+          command: |
+            sudo bash < <(curl -s https://raw.githubusercontent.com/babashka/babashka/master/install)
+      - run:
+          name: check status is 200
+          command: |
+            bb script/test-webserver.bb
+
+      - save_cache:
+          paths:
+            - ~/.m2
+          key: v1-dependencies-{{ checksum "deps.edn" }}
       
 
 # Orchestrate jobs using workflows
 # See: https://circleci.com/docs/workflows/ & https://circleci.com/docs/configuration-reference/#workflows
 workflows:
-  say-hello-workflow: # This is the name of the workflow, feel free to change it to better match your workflow.
+  test-workflow: # This is the name of the workflow, feel free to change it to better match your workflow.
     # Inside the workflow, you define the jobs you want to run.
     jobs:
-      - test
+      - test-jar
