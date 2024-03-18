@@ -39,6 +39,9 @@ jobs:
           command: |
             sudo bash < <(curl -s https://raw.githubusercontent.com/babashka/babashka/master/install)
       - run:
+          name: sleep 5 seconds
+          command: sleep 5
+      - run:
           name: check status is 200
           command: |
             bb script/test-webserver.bb
