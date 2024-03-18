@@ -12,3 +12,8 @@ pom.xml.asc
 .lein-failures
 .nrepl-port
 .cpcache/
+in.d2
+out.svg
+test.svg
+*~
+!/.circleci/
