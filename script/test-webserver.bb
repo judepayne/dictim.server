@@ -4,7 +4,7 @@
 
 (def status
   (->
-   (http/post "http://localhost:5001/graph"
+   (http/post "http://127.0.0.1:5001/graph"
               {:headers {:content-type "application/json"
                          "Accept" "image/svg+xml"}
                :body
