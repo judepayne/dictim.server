@@ -32,6 +32,7 @@ jobs:
           name: run JAR
           command: |
             java -jar target/dictimserver-standalone.jar
+	  background: true
       # we install bb now to give the webserver time to start
       - run:
           name: install babashka
