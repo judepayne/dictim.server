@@ -1,4 +1,5 @@
 ;; A babashka script to call the webserver and check status is 200
+;; a babashka script to test the webserver
 (require '[babashka.http-client :as http])
 (require '[cheshire.core :as json])
 
