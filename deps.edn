@@ -5,7 +5,7 @@
         org.slf4j/slf4j-simple {:mvn/version "1.7.32"}
         environ/environ {:mvn/version "1.2.0"}
         org.clojure/data.json            {:mvn/version "2.5.0"}
-        io.github.judepayne/dictim {:git/tag "0.6.3" :git/sha "2d33fa8"}
+        io.github.judepayne/dictim {:git/tag "0.6.4" :git/sha "4288555"}
         io.github.judepayne/dictim.graph {:git/tag "0.1.4" :git/sha "b062c62"}
         cheshire/cheshire {:mvn/version "5.12.0"}
         org.conscrypt/conscrypt-openjdk-uber {:mvn/version "2.5.2"}}
