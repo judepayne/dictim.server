@@ -41,9 +41,9 @@ Ordinary diagrams go stale over time, but data driven diagrams are generated at 
 
 ## API
 
-Currently there are two functions.
 - The high-level graph api on the `/graph` route for boxes and arrows diagrams. (Technically called network diagrams) [Tutorial and Reference](docs/graph_ref.md)
-- The low-level dictim api on the `/dictim` route which can be used to create all of the diagram styles that d2 provides (including sequence diagrams). [Tutorial and Reference](docs/dictim_ref.md)
+- The lower-level dictim api on the `/dictim` route which can be used to create all of the diagram styles that d2 provides (including sequence diagrams). [Tutorial and Reference](docs/dictim_ref.md)
+- An api for converting between dictim and d2 and visa versa [Reference](docs/conversions_ref.md)
 
 
 **TODO** A todo is to build a second high-level api dedicated to sequence diagrams.

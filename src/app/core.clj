@@ -5,11 +5,11 @@
                        [io.pedestal.interceptor.helpers :as interceptor]
                        [clojure.java.shell :as sh]
                        [dictim.d2.compile :as c]
+                       [dictim.d2.parse :as p]
+                       [dictim.json :as j]
                        [clojure.java.io :as io])
     (:gen-class))
 
-
-;; TODO Trap when json is badly formed.
 
 ;; Shell out to d2 executable
 (defn- format-error [s err]
@@ -95,13 +95,51 @@
      :body "No json in body, or invalid json."}))
 
 
+(defn dictim->d2-handler
+  [{:keys [headers json-params path-params body] :as request}]
+  (if json-params
+    (try
+      (let [d2 (apply c/d2 json-params)]
+        {:status 200
+           :headers {"Content-Type" "text/plain"}
+           :body d2})
+      (catch Exception e
+        {:status 400
+         :body (.getMessage e)}))
+    {:status 400
+     :body "No json in body, or invalid json."}))
+
+
+(defn d2->dictim-handler
+  [{:keys [headers json-params path-params body] :as request}]
+  (if-let [d2 (slurp (:body request))]
+    (try
+      (let [dict (j/to-json (p/dictim d2))]
+        {:status 200
+         :headers {"Content-Type" "text/plain"}
+         :body dict})
+      (catch Exception e
+        {:status 400
+         :body (.getMessage e)}))
+    {:status 400
+     :body "No d2 in body."}))
+
+
 (def routes #{["/graph" :post
                [(body-params/body-params) graph->d2-handler]
                :route-name :graph->d2]
 
               ["/dictim" :post
                [(body-params/body-params) dictim-handler]
-               :route-name :dictim]})
+               :route-name :dictim]
+
+              ["/conversions/dictim-to-d2" :post
+               [(body-params/body-params) dictim->d2-handler]
+               :route-name :dictim->d2]
+
+              ["/conversions/d2-to-dictim" :post
+               d2->dictim-handler
+               :route-name :d2->dictim]})
 
 
 (def service-map
