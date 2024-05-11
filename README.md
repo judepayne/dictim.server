@@ -7,9 +7,9 @@ Diagrams as data.
 
 [d2](https://github.com/terrastruct/d2) by Terrastruct is a text domain specific language for expressing a diagram. It is also a native executable which converts the d2 text into the diagram itself e.g. svg, png etc.
 
-[dictim](https://github.com/judepayne/dictim) is a data-ized version of d2, for when you want to describe your diagram as data rather than text. If you already have the data that describes a diagram in a database or source control. Like d2, dictim is also a compiler which converts the dictim format into d2.
+[dictim](https://github.com/judepayne/dictim) is a data-ized version of d2, for when you want to describe your diagram as data rather than text. If you already have the data that describes a diagram in a database or source control, you can build a dictim representation of a diagram from that data. dictim is also a compiler which converts the dictim format into d2.
 
-**dictim server** is a handy deployable microservice which offers a REST api to convert dictim in json form into diagrams.
+**dictim server** is a handy easy-to-deploy microservice which offers a REST api to convert dictim in json form into diagrams.
 
 A one stop shop for:    dictim -> d2 -> diagram
 
@@ -142,7 +142,6 @@ Try posting to the webserver using any of the sample `curl` commands in resource
 
 **TODO**
 - Consider building a high level api for sequence diagrams as `/graph` is for network diagrams.
-- Arbitrary nesting of conditions
 
 
 ## License
