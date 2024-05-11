@@ -9,10 +9,21 @@
               {:headers {:content-type "application/json"
                          "Accept" "image/svg+xml"}
                :body
-               (json/generate-string
-                {:nodes
-                 [{:a "one"}]
-                 :node->key :a})})
+               "{\"nodes\":[
+		     {
+		       \"id\":\"app12872\",
+		       \"name\":\"Trade pad\",
+		       \"owner\":\"Lakshmi\",
+		       \"dept\":\"Finance\",
+		       \"functions\":[
+			 \"Position Keeping\",
+			 \"Quoting\"
+		       ],
+		       \"tco\":1200000,
+		       \"process\":\"p.112\"
+		     }],
+            \"node->key\": \"id\"
+		 }"})
    :status))
 
 (when-not (= status 200)
@@ -56,15 +67,29 @@ golf as if they were games.
 
 
 (when-not
- (=
-  (-> (http/post "http://localhost:5001/conversions/d2-to-dictim"
-                 {:headers {:content-type "text/plain"
-                            "Accept" "application/json"}
-                  :body
-                  "shape: sequence_diagram
+    (=
+     (-> (http/post "http://localhost:5001/conversions/d2-to-dictim"
+                    {:headers {:content-type "text/plain"
+                               "Accept" "application/json"}
+                     :body
+                     "shape: sequence_diagram
                      alice -> bob: What does it mean?
                      bob -> alice: The ability to play bridge or golf as if they were games.
                      # This is a comment"})
-      :body)
-  "[{\"shape\":\"sequence_diagram\"},[\"alice\",\"->\",\"bob\",\"What does it mean?\"],[\"bob\",\"->\",\"alice\",\"The ability to play bridge or golf as if they were games.\"],[\"comment\",\"This is a comment\"]]")
+         :body)
+     "[{\"shape\":\"sequence_diagram\"},[\"alice\",\"->\",\"bob\",\"What does it mean?\"],[\"bob\",\"->\",\"alice\",\"The ability to play bridge or golf as if they were games.\"],[\"comment\",\"This is a comment\"]]")
   (throw (Exception. "Failed to convert d2 to dictim")))
+
+
+(when-not
+    (=
+     (try
+        (-> (http/post "http://localhost:5001/conversions/d2-to-dictim"
+                         {:headers {:content-type "text/plain"
+                                    "Accept" "application/json"}
+                          :body
+                          "alice ->"})
+              :body)
+        (catch Exception e (:status (.data e))))
+     400)
+  (throw (Exception. "bad d2 failed to produce an error")))

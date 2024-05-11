@@ -53,7 +53,7 @@
   [d2 & {:keys [path layout] :or {path path-to-d2
                                   layout layout-engine}}]
   (let [{:keys [out err]} (sh/sh path "--layout" layout "--theme" theme "-" :in d2)]
-    (if err
+    (if (and (= out "") err)
       (throw (IllegalArgumentException. ^String (str "d2 engine error:\n"(format-error d2 err))))
       out)))
 
