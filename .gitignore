@@ -16,4 +16,5 @@ in.d2
 out.svg
 test.svg
 *~
-!/.circleci/
+test.json
+out.*
