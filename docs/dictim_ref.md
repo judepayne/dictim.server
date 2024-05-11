@@ -8,6 +8,8 @@ Therefore, the syntax of dictim in Clojure and the syntax of the 'json-ified' ve
 
 The dictim syntax is covered [here](https://github.com/judepayne/dictim/wiki/Dictim-Syntax) and there are further details about its 'json-fied' form on that page.
 
+For dictim templates, see lower down.
+
 ### Return values
 
 Successful requests will result into a 200 response with a Content-Type of `image/svg+xml` and the svg of the image in the body.
@@ -190,4 +192,103 @@ And, of course it's not just sequence diagrams that can be created... All of d2/
     ]
   ]
 ]
+````
+
+### Templates
+
+
+Templates are a feature of dictim that allow you to separately pass the 'data part' of the dictim from the 'styling instructions part'. They are covered on the dictim wiki [here](https://github.com/judepayne/dictim/wiki/Template).
+
+In dictim.server a separate route is available for templaes `/dictim-template`. To use this route, post a json object with the dictim, template and optionally directives under separate keys like so..
+
+
+````bash
+curl --header "Content-Type: application/json" \
+  --request POST \
+  --data '{
+  "dictim": [
+    [
+      "Process View",
+      [
+        "p113",
+        [
+          "app14149",
+          "Solar Wind"
+        ],
+        [
+          "app14027",
+          "Leventine Sky"
+        ]
+      ],
+      [
+        "p114",
+        [
+          "app14181",
+          "eBed"
+        ],
+        [
+          "app14029",
+          "Storm"
+        ]
+      ],
+      [
+        "p113",
+        "->",
+        "p114",
+        "various flows"
+      ]
+    ]
+  ],
+  "template": [
+    [
+      "and",
+      [
+        "=",
+        "element-type",
+        "shape"
+      ],
+      [
+        "or",
+        [
+          "=",
+          "key",
+          "app14181"
+        ],
+        [
+          "=",
+          "key",
+          "app14027"
+        ]
+      ]
+    ],
+    {
+      "class": "lemony"
+    },
+    [
+      "and",
+      [
+        "=",
+        "element-type",
+        "shape"
+      ]
+    ],
+    {
+      "style": {
+        "fill": "aliceblue"
+      }
+    }
+  ],
+  "directives": {
+    "direction": "right",
+    "classes": {
+      "lemony": {
+        "style": {
+          "fill": "lightblue",
+          "border-radius": 5
+        }
+      }
+    }
+  }
+}' \
+  http://localhost:5001/dictim-template
 ````

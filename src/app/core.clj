@@ -6,6 +6,7 @@
                        [clojure.java.shell :as sh]
                        [dictim.d2.compile :as c]
                        [dictim.d2.parse :as p]
+                       [dictim.template :as tp]
                        [dictim.json :as j]
                        [clojure.java.io :as io])
     (:gen-class))
@@ -52,9 +53,9 @@
   [d2 & {:keys [path layout] :or {path path-to-d2
                                   layout layout-engine}}]
   (let [{:keys [out err]} (sh/sh path "--layout" layout "--theme" theme "-" :in d2)]
-    (or
-     out
-     (throw (IllegalArgumentException. ^String (str "d2 engine error: "(format-error d2 err)))))))
+    (if err
+      (throw (IllegalArgumentException. ^String (str "d2 engine error:\n"(format-error d2 err))))
+      out)))
 
 
 (defn graph->d2-handler
@@ -95,14 +96,34 @@
      :body "No json in body, or invalid json."}))
 
 
+(defn dictim-template-handler
+  [{:keys [headers json-params path-params body] :as request}]
+  (if json-params
+    (try
+      (let [{dictim :dictim
+             directives :directives
+             template :template} json-params
+            dictim (tp/add-styles dictim template directives)
+            d2 (apply c/d2 dictim)
+            svg (d2->svg d2)]
+        {:status 200
+         :headers {"Content-Type" "image/svg+xml"}
+         :body svg})
+      (catch Exception e
+        {:status 400
+         :body (.getMessage e)}))
+    {:status 400
+     :body "No json in body, or invalid json."}))
+
+
 (defn dictim->d2-handler
   [{:keys [headers json-params path-params body] :as request}]
   (if json-params
     (try
       (let [d2 (apply c/d2 json-params)]
         {:status 200
-           :headers {"Content-Type" "text/plain"}
-           :body d2})
+         :headers {"Content-Type" "text/plain"}
+         :body d2})
       (catch Exception e
         {:status 400
          :body (.getMessage e)}))
@@ -132,6 +153,10 @@
               ["/dictim" :post
                [(body-params/body-params) dictim-handler]
                :route-name :dictim]
+
+              ["/dictim-template" :post
+               [(body-params/body-params) dictim-template-handler]
+               :route-name :dictim-template]
 
               ["/conversions/dictim-to-d2" :post
                [(body-params/body-params) dictim->d2-handler]
