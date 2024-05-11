@@ -10,18 +10,18 @@ You should send a POST request to the `/graph` route with a json map with the fo
 
 | key | expanation |
 | --- | ---------- |
-| `"nodes"` | a vector of maps, each map being a representation of one node. The maps don't have to be homogenous (i.e. have the same keys) but often are if you representing multiple instances of the same type of thing. |
-| `"edges"` | a vector of maps, each map being a representation of one edge. Each edge must have `"src"` and `"dest"` keys and any other keys you need to model the edge. Again, they don't need to be homogenous but often are. the `"src"` and `"dest:"` keys are how you tie edges to nodes. The value of each of these keys must be the value of one of (the same one across all nodes) keys in the maps representing the nodes. The pointer to that (node) key is.. |
-| `"node->key"` | this indicates the key to use in node maps to uniquely represent that node. The value returned must be unique for each node. Often this could be some sort of `"id"` key. |
+| `"nodes"` | a json array of json objectts, each object being a representation of one node. The objects don't have to be homogenous (i.e. have the same keys) but often are if you representing multiple instances of the same type of thing. |
+| `"edges"` | an array of objects, each object being a representation of one edge. Each edge must have `"src"` and `"dest"` keys and any other keys you need to model the edge. Again, they don't need to be homogenous but often are. the `"src"` and `"dest:"` keys are how you tie edges to nodes. The value of each of these keys must be the value of one of (the same one across all nodes) keys in the objectss representing the nodes. The pointer to that (node) key is.. |
+| `"node->key"` | this indicates the key to use in node objects to uniquely represent that node. The value returned must be unique for each node. Often this could be some sort of `"id"` key. |
 
 *Optional keys:*
 
 | key | expanation |
 | --- | ---------- |
 | `"node-specs"` & `"edge-specs"` | map nodes and edges to the visual styles that should be used to display that node or edge. The values of these two keys are a mini dsl (domain specific language) that requires further explanation. Please see below for more details. |
-| `"node->container"` | this indicates the use to use in node maps to map a node to its containing container (if it has/ needs one). |
-| `"container->parent"` | this should be a map of containers to their parent container (if needed) and is how you create hierarchies of containers within containers in the diagram. |
-| `"container->attrs"` | a map of containers to the visual styles that should be used to display that container. |
+| `"node->container"` | this indicates the key to use in node objects to map a node to its containing container (if it has/ needs one). |
+| `"container->parent"` | this should be a json object that maps containers to their parent container (if needed) and is how you create hierarchies of containers within containers in the diagram. |
+| `"container->attrs"` | a json objects that maps containers to the visual styles that should be used to display that container. |
 
 An example of container->attrs:
 
@@ -33,92 +33,68 @@ An example of container->attrs:
   }
 ```
 
-is used to map a single container "Securities" to styling instructions that indicates that the fill color of that container should be green. Please see [this page](https://d2lang.com/tour/style) for details on styling options. You can also add a `"label"` entry to this map, if you wish for the container to be labelled differently to its name.
+is used to map a single container "Securities" to styling instructions that indicates that the fill color of that container should be green. Please see [this page](https://d2lang.com/tour/style) for details on styling options. You can also add a `"label"` entry to this json object, if you wish for the container to be labelled differently to its name.
 
 
 ### node-specs, edge-specs mini dsl
 
-It would be powerful to be able to conditionally style nodes and edges depending on their content. That's what the mini dsl for these two keys allows you to do!
 
+The values supplied to the `"node-specs"` or `"edge-specs"` keys have the same form, a json array of paired <test> <result> entries.. e.g.:
 
-Here's the overall form of either the node->attrs or edge->attrs entry; both are the same:
+````json
+.."node-specs": [<test1>, <result>, <test2>, <result2>, ...]
+````
 
-```json
-{"labels": ..label-specs..,
- "styles": ..style-specs..}
-```
+When a test is satisfied (by a node or edge), the result is read and used to determine how that node or edge is styled in the final diagram.
 
-Both the "labels" and "styles" keys are optional.
+The syntax is tests is covered [here](https://github.com/judepayne/dictim/wiki/Template) on the dictim wiki.
 
-label-sepcs and style-specs are very similar both not exactly the same. Let's look at the anatomy of an example label-specs and then explain the differences for a style spec.
+In json form (with dictim.server), a test might look like:
 
-#### label specs
+````json
+["=", "app_name", "Sunflower"]
+````
 
-Here's an example label specs collection..
+The wiki page, mentions just three operators: `"="` `"!="` and `"match"`. In addition to those, you may use `"contains"` `"doesnt-contain"` `">"` `"<"` `">="` and `"<="`.
 
-```json
-[[{"key":"owner"},["equals","dept","Equities"]],[{"key":"name"}]]
-```
-a vector of individual label specs, where each spec is made of just one part - a label instruction or two parts - a label instruction and a condition. Let's look at instructions first. From the example, this label spec has no conditional part, just a label instruction which tells dictim.server how to build the label from each node or edge.
+If, for example, one of your nodes is represented by this json object:
 
 ```json
-[{"key":"name"}]
+{"app_id": 4789,
+ "capabilities": ["data mgt", "data conversion"],
+ "owner": "Scott"}
 ```
-When there's no condition in a label spec, it's like the `else` clause in an `if .. if-else .. if-else .. else` statement. Only one one part/ non conditional label spec is allowed in each label specs collections.
 
-In the above case, the instruction tells dictim.server to use the value of the "name" key for each node or edge as the label.
-This is the simplest type of label instruction. There are two other forms..
-
-Rather than a single key, we can replace with a vector of keys, e.g.:
+then this test would be true for that node:
 
 ```json
-[{"key":["name","owner"]}]
+["and", ["=", "owner", "Scott"], ["contains", "capabilities", "data mgt"]]
 ```
 
-This instruction would tell dictim.server to create a label by combining the values found under the "name" and "owner" keys (and splicing them together with `\newlines`).
+and the corresponding result would be interpreted and used to style the node.
 
-Finally an instruction can be specified as a vector of maps, e.g.:
+`"else"` is a special test which always evaluates to true for any node of edge, and would normally be placed in the second last position of a `"node-specs"` or `"edge-specs"` as a catch all.
+
+
+The form of a result is a json object which can optionally have a `"label"` entry and any number of other entries. The other entries are assumed to be d2 (styling) attributes which are covered on dictim's syntax [wiki page](https://github.com/judepayne/dictim/wiki/Dictim-Syntax#Attributes).
+
+`"label"` which sets the label of the node (or edge) is a bit special and has further processing applied to it.
+
+When the value of `"label"` is a string, that is used for the label.
+
+When it's a json object, it is interpreted.
 
 ```json
-[{"key":"name"},{"key":"owner"}]
+{"key": "app_id"}
 ```
 
-which accomplishes the same as the vector of keys.
-
-Let's look at conditions. In the example, the first label spec has the following condition:
+would result in the `"app_id"` of the node or edge being used as its label.
 
 ```json
-["equals","dept","Equities"]
+{"key": ["app_id", "owner"]}
 ```
 
-Each condition has three parts; the comparator, the key (in the node or edge) and the value (to be compared to).
-Possible comparators are:
-
-
-```code
-"equals"
-"not-equals"
-"contains"
-"doesnt-contain"
-">"
-"<"
-">="
-"<="
-```
-
-`"contains"` and `"doesnt-contain"` can be used when the value is a collection (a sequence or set). The greater-than/ less-than comparators can be used when the value is numeric.
-
-Conditions can be combined with an "and" or an "or". For example `["and" [">","tco",1000000] ["equals","dept","Equities"]]` is a valid condition, but conditions cannot currently be arbitrarily nested, so `["or" ["equals","owner,"Joe"] ["and" [">","tco",1000000] ["equals","dept","Equities"]]]` is not valid.
-
-Style specs differ from label specs only in the detail of the instruction. A style spec is a simple map of d2 styling attributes and values, which are described [here](https://d2lang.com/tour/style).
-
-To sum up, the format of a spec collection is:
-
-```code
-[[*else-instruction*][*instruction* *condition*][*instruction* *condition*]...]
-```
-
-where only one *else-instruction* is allowed. The order of the specs determines in which each is attempted to be matched against a node or label, but the *else-instruction* can be placed anywhere since it is automatically moved to the end before matching.
+would result in a label which takes the `"app_id"` of the node or edge, and its `"owner"` and concatenating with a `\newline` in between.
 
 
 ### Return values
@@ -137,7 +113,7 @@ A 401 Internal Server Error generally means that the json sent was invalid.
 Let's now build this example diagram one step at a time, by hand. This is of course not normally how you'd do it; rather you'd have code that generates the json diagram spec from data you have and pass the spec to dictim.server. Building by hand though is a good way to understand what all the keys in the diagram spec do.
 
 
-<img src="images/graphtutorial1.svg" width="850">
+<img src="../images/graphtutorial1.svg" width="850">
 
 
 is an architecture diagram that was built from this diagram spec..
@@ -146,150 +122,148 @@ is an architecture diagram that was built from this diagram spec..
 
 ```json
 {
-  "nodes":[
-	    {
-	      "id":"app12872",
-	      "name":"Trade pad",
-	      "owner":"Lakshmi",
-	      "dept":"Finance",
-	      "functions":[
-		"Position Keeping",
-		"Quoting"
-	      ],
-	      "tco":1200000,
-	      "process":"p.112"
-	    },
-	    {
-	      "id":"app12873",
-	      "name":"Data Source",
-	      "owner":"India",
-	      "dept":"Securities",
-	      "functions":[
-		"Booking",
-		"Order Mgt"
-	      ],
-	      "tco":1100000,
-	      "process":"p.114"
-	    },
-	    {
-	      "id":"app12874",
-	      "name":"Crypto Bot",
-	      "owner":"Joesph",
-	      "dept":"Equities",
-	      "functions":[
-		"Accounting",
-		"Booking"
-	      ],
-	      "tco":500000,
-	      "process":"p.112"
-	    },
-	    {
-	      "id":"app12875",
-	      "name":"Data Solar",
-	      "owner":"Deepak",
-	      "dept":"Securities",
-	      "functions":[
-		"Position Keeping",
-		"Data Master"
-	      ],
-	      "tco":1000000,
-	      "process":"p.114"
-	    },
-	    {
-	      "id":"app12876",
-	      "name":"Data Solar",
-	      "owner":"Lakshmi",
-	      "dept":"Risk",
-	      "functions":[
-		"Accounting",
-		"Data Master"
-	      ],
-	      "tco":1700000,
-	      "process":"p.114"
-	    }
-	  ],
-	  "edges":[
-	    {
-	      "src":"app12874",
-	      "dest":"app12875",
-	      "data-type":"security reference"
-	    },
-	    {
-	      "src":"app12874",
-	      "dest":"app12876",
-	      "data-type":"quotes"
-	    },
-	    {
-	      "src":"app12875",
-	      "dest":"app12875",
-	      "data-type":"instructions"
-	    },
-	    {
-	      "src":"app12874",
-	      "dest":"app12872",
-	      "data-type":"instructions"
-	    },
-	    {
-	      "src":"app12875",
-	      "dest":"app12874",
-	      "data-type":"client master"
-	    },
-	    {
-	      "src":"app12875",
-	      "dest":"app12874",
-	      "data-type":"allocations"
-	    }
-	  ],
-	  "node->key":"id",
-	  "node->container":"dept",
-	  "container->parent":{
-	    "Finance":"2LOD",
-	    "Risk":"2LOD",
-	    "Securities":"FO",
-	    "Equities":"FO",
-	    "FO":"Company",
-	    "2LOD":"Company"
-	  },
-	  "node-specs":{
-	    "labels":[
-	      [
-		{
-		  "key":"owner"
-		},
-		[
-		  "equals",
-		  "dept",
-		  "Equities"
-		]
-	      ],
-	      [
-		{
-		  "key":"name"
-		}
-	      ]
-	    ]
-	  },
-	  "edge-specs":{
-	    "labels":[
-	      [
-		{
-		  "key":"data-type"
-		}
-	      ]
-	    ]
-	  },
-	  "container->attrs":{
-	    "Securities":{
-	      "style.fill":"'#d6edd5'"
-	    }
-	  }
-	}
+"nodes":[
+    {
+      "id":"app12872",
+      "name":"Trade pad",
+      "owner":"Lakshmi",
+      "dept":"Finance",
+      "functions":[
+	"Position Keeping",
+	"Quoting"
+      ],
+      "tco":1200000,
+      "process":"p.112"
+    },
+    {
+      "id":"app12873",
+      "name":"Data Source",
+      "owner":"India",
+      "dept":"Securities",
+      "functions":[
+	"Booking",
+	"Order Mgt"
+      ],
+      "tco":1100000,
+      "process":"p.114"
+    },
+    {
+      "id":"app12874",
+      "name":"Crypto Bot",
+      "owner":"Joesph",
+      "dept":"Equities",
+      "functions":[
+	"Accounting",
+	"Booking"
+      ],
+      "tco":500000,
+      "process":"p.112"
+    },
+    {
+      "id":"app12875",
+      "name":"Data Solar",
+      "owner":"Deepak",
+      "dept":"Securities",
+      "functions":[
+	"Position Keeping",
+	"Data Master"
+      ],
+      "tco":1000000,
+      "process":"p.114"
+    },
+    {
+      "id":"app12876",
+      "name":"Data Solar",
+      "owner":"Lakshmi",
+      "dept":"Risk",
+      "functions":[
+	"Accounting",
+	"Data Master"
+      ],
+      "tco":1700000,
+      "process":"p.114"
+    }
+  ],
+  "edges":[
+    {
+      "src":"app12874",
+      "dest":"app12875",
+      "data-type":"security reference"
+    },
+    {
+      "src":"app12874",
+      "dest":"app12876",
+      "data-type":"quotes"
+    },
+    {
+      "src":"app12875",
+      "dest":"app12875",
+      "data-type":"instructions"
+    },
+    {
+      "src":"app12874",
+      "dest":"app12872",
+      "data-type":"instructions"
+    },
+    {
+      "src":"app12875",
+      "dest":"app12874",
+      "data-type":"client master"
+    },
+    {
+      "src":"app12875",
+      "dest":"app12874",
+      "data-type":"allocations"
+    }
+  ],
+  "node->key":"id",
+  "node->container":"dept",
+  "container->parent":{
+    "Finance":"2LOD",
+    "Risk":"2LOD",
+    "Securities":"FO",
+    "Equities":"FO",
+    "FO":"Company",
+    "2LOD":"Company"
+  },
+  "node-specs":[
+    [
+      "=",
+      "dept",
+      "Equities"
+    ],
+    {"label":
+      {
+	"key": "owner"
+      }
+    },	    
+    "else",
+    {"label":
+      {
+	"key": "name"
+      }
+    }
+  ],	  
+  "edge-specs":[
+     "else",
+     {"label":
+       {
+	 "key": "data-type"
+       }
+     }
+   ],
+  "container->attrs":{
+    "Securities":{
+      "style.fill":"'#d6edd5'"
+    }
+  }
+}
 ```
 
 </details>
 
 
-The `"nodes"` key is a vector of nodes, each one being an arbitrary map of keys and values. Let look at one.
+The `"nodes"` key is an array of nodes, each one being a json object of keys and values. Let look at one.
 
 ```json
 {
@@ -331,7 +305,7 @@ curl --header "Content-Type: application/json" \
 and have the result written to a file called `out.svg`
 
 
-<img src="images/graphtutorial2.svg" width="400">
+<img src="../images/graphtutorial2.svg" width="400">
 
 
 As well as the `"node"` itself, we must have a `"node->key"` entry in the diagram spec or dictim.server will return an error.
@@ -340,7 +314,9 @@ The `"node->key"` entry serves two purposes:
 - specifies the default label if no other label is specified by a `"node-specs"` entry.
 - uniquely identifies the node, which we'll need later when adding edges that have a source and destination.
 
-> Each node in a diagram spec must have one key in it's map which is unique.
+
+> [!NOTE]
+> Each node in a diagram spec must have one key in the json object representing it which is unique. `"node->key"` needs to be set to that key name.
 
 
 Let's now add in a second node and an edge between the two.
@@ -380,43 +356,41 @@ curl --header "Content-Type: application/json" \
 			"data-type":"instructions"
 		      }],
 	    "node->key": "id",
-	    "node-specs":{
-			   "labels":[
-				      [
-					{
-					  "key":"name"
-					}
-				      ]
-				    ]
-			 }
+	    "node-specs":[
+		      "else",
+		      {"label":
+			{
+			  "key": "name"
+			}
+		      }
+	            ]
 		 }' \
   http://localhost:5001/graph > out.svg
 ```
 
-Each `"edge"` is also just a map. Unlike a `"node"` there are two keys that must always be present; `"src"` and `"dest"`, the source and destination of the edge. The value of these two keys must refer to the unique value of a node that we just talked about.
+Each `"edge"` is also just a json object. Unlike a `"node"` there are two keys that must always be present; `"src"` and `"dest"`, the source and destination of the edge. The value of these two keys must refer to the unique value of a node that we just talked about.
 
 Beyond those two keys, the other entries making up an `"edge"` is arbitrary and can be as many as you want. As for `"nodes"` it's worth including more entries in each edge in case you need to use them later in your dynamic, evolving diagram, but in this example we've just added one `"data-type"` which represents the type of data flowing between two applications in our architecture diagram.
 
-We've also added a `"node-specs"` entry into the diagram spec, and inside it a simple unconditional label instruction, that tells dictim.server to use the `"name"` key's value from each node as the label of that node.
+We've also added a `"node-specs"` entry into the diagram spec, and inside it is an `"else"` (i.e. catch all) clause that tells dictim.server to use the `"name"` key's value from each node as the label of that node.
 
 Here's the diagram now.
 
-<img src="images/graphtutorial3.svg" width="400">
+<img src="../images/graphtutorial3.svg" width="400">
 
  Let's add back in the other nodes, edges and an edge-spec that controls the labels used for the edges.
 
 The edge-spec:
 
 ```json
-"edge-specs":{
-  "labels":[
-    [
-      {
-	"key":"data-type"
-      }
-    ]
-  ]
-}
+"edge-specs":[
+   "else",
+   {"label":
+     {
+       "key": "data-type"
+     }
+   }
+ ]
 ```
 
 <details>
@@ -521,34 +495,32 @@ curl --header "Content-Type: application/json" \
 	    }
 	  ],
 	  "node->key":"id",
-	  "node-specs":{
-	    "labels":[
-	      [
-		{
-		  "key":"owner"
-		},
-		[
-		  "equals",
-		  "dept",
-		  "Equities"
-		]
-	      ],
-	      [
-		{
-		  "key":"name"
-		}
-	      ]
-	    ]
-	  },
-	  "edge-specs":{
-	    "labels":[
-	      [
-		{
-		  "key":"data-type"
-		}
-	      ]
-	    ]
-	  }
+	  "node-specs":[
+	    [
+              "=",
+	      "dept",
+	      "Equities"
+            ],
+	    {"label":
+	      {
+		"key": "owner"
+	      }
+	    },	    
+	    "else",
+	    {"label":
+	      {
+		"key": "name"
+	      }
+	    }
+	  ],	  
+	  "edge-specs":[
+	     "else",
+	     {"label":
+	       {
+		 "key": "data-type"
+	       }
+	     }
+	   ]
 	}' \
   http://localhost:5001/graph > out.svg
 ```
@@ -558,24 +530,24 @@ curl --header "Content-Type: application/json" \
 
 This is the diagram now
 
-<img src="images/graphtutorial4.svg" width="850">
+<img src="../images/graphtutorial4.svg" width="850">
 
-Notice that there's no node labelled "Crypto Bot" any longer. That's because we also added in a second *conditional* label instruction into the `"node-specs"`
+Notice that there's no node labelled "Crypto Bot" any longer. That's because we also added in a second test clause into the `"node-specs"`
 
 ```json
 [
+  "=",
+  "dept",
+  "Equities"
+],
+{"label":
   {
-    "key":"owner"
-   },
-   [
-     "equals",
-     "dept",
-     "Equities"
-   ]
-]
+    "key": "owner"
+  }
+},	    
 ```
 
-The condition part of this label instructions tell dictim.server that this instruction applies only to nodes where the value of the `"dept"` key is equals to "Equities", and when that is true to use the `"owner"` key from the node map rather than the default "name".
+The condition part of this label instructions tell dictim.server that this instruction applies only to nodes where the value of the `"dept"` key is equals to "Equities", and when that is true to use the `"owner"` key from the node object rather than the default "name". Since this is a more specific test than the catch all `"else"`, it goes before that.
 
 All that's left to do now is put the container instructions back into the diagram spec that handle how nodes are positioned into containers, how those containers are themselves positioned inside other containers, and how all the containers should be styled.
 
@@ -599,7 +571,7 @@ The next is `"container->parent"` which provides the hierarchy of containers by 
 	  },
 ```
 
-and finally there is `"container->attrs"` which is a map of containers to their styles.
+and finally there is `"container->attrs"` which is a json object that maps containers to their styles.
 
 ```json
 	  "container->attrs":{
@@ -723,34 +695,32 @@ curl --header "Content-Type: application/json" \
 	    "FO":"Company",
 	    "2LOD":"Company"
 	  },
-	  "node-specs":{
-	    "labels":[
-	      [
-		{
-		  "key":"owner"
-		},
-		[
-		  "equals",
-		  "dept",
-		  "Equities"
-		]
-	      ],
-	      [
-		{
-		  "key":"name"
-		}
-	      ]
-	    ]
-	  },
-	  "edge-specs":{
-	    "labels":[
-	      [
-		{
-		  "key":"data-type"
-		}
-	      ]
-	    ]
-	  },
+	  "node-specs":[
+	    [
+              "=",
+	      "dept",
+	      "Equities"
+            ],
+	    {"label":
+	      {
+		"key": "owner"
+	      }
+	    },	    
+	    "else",
+	    {"label":
+	      {
+		"key": "name"
+	      }
+	    }
+	  ],	  
+	  "edge-specs":[
+	     "else",
+	     {"label":
+	       {
+		 "key": "data-type"
+	       }
+	     }
+	   ],
 	  "container->attrs":{
 	    "Securities":{
 	      "style.fill":"'#d6edd5'"
@@ -766,24 +736,22 @@ curl --header "Content-Type: application/json" \
 As a bonus and final step, let's add a conditional styling instruction under `"node-specs"` which styles nodes (application in our example) that contain the function 'Accounting' with a different fill and border radius.
 
 ```json
-"styles":[
-      [
-        {
-          "fill":"'#f4a261'",
-          "border-radius":8
-	  
-        },
-        [
-          "contains",
-          "functions",
-          "Accounting"
-        ]
-      ]
-    ]
-
+[
+  "contains",
+  "functions",
+  "Accounting"
+],
+{
+  "label":
+  {
+    "key": "owner"
+  },	       
+  "style.fill":"'#f4a261'",
+  "style.border-radius":8
+}
 ```
 
-<img src="images/graphtutorial5.svg" width="850">
+<img src="../images/graphtutorial5.svg" width="850">
 
 <details>
 <summary>Full curl command</summary>
@@ -896,47 +864,45 @@ curl --header "Content-Type: application/json" \
 	    "FO":"Company",
 	    "2LOD":"Company"
 	  },
-	  "node-specs":{
-	    "labels":[
-	      [
-		{
-		  "key":"owner"
-		},
-		[
-		  "equals",
-		  "dept",
-		  "Equities"
-		]
-	      ],
-	      [
-		{
-		  "key":"name"
-		}
-	      ]
-	    ],
-	    "styles":[
-	      [
-		{
-		  "fill":"'#f4a261'",
-		  "border-radius":8
-		},
-		[
-		  "contains",
-		  "functions",
-		  "Accounting"
-		]
-	      ]
-	    ]
-	  },
-	  "edge-specs":{
-	    "labels":[
-	      [
-		{
-		  "key":"data-type"
-		}
-	      ]
-	    ]
-	  },
+	  "node-specs":[
+	    [
+              "contains",
+	      "functions",
+	      "Accounting"
+            ],
+	    {
+	     "label":
+	     {
+	       "key": "owner"
+	     },	       
+	     "style.fill":"'#f4a261'",
+	     "style.border-radius":8
+	     },	    
+	    [
+              "=",
+	      "dept",
+	      "Equities"
+            ],
+	    {"label":
+	      {
+		"key": "owner"
+	      }
+	    },	    
+	    "else",
+	    {"label":
+	      {
+		"key": "name"
+	      }
+	    }
+	  ],	  
+	  "edge-specs":[
+	     "else",
+	     {"label":
+	       {
+		 "key": "data-type"
+	       }
+	     }
+	   ],
 	  "container->attrs":{
 	    "Securities":{
 	      "style.fill":"'#d6edd5'"

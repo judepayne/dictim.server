@@ -45,7 +45,7 @@ curl --header "Content-Type: application/json" \
 
 will produce the svg for this image.
 
-![Example sequence diagram](images/seq_example.svg)
+![Example sequence diagram](../images/seq_example.svg)
 
 
 A more complex sequence diagram example
@@ -60,7 +60,7 @@ curl --header "Content-Type: application/json" \
 
 will produce the svg for this image.
 
-![Example sequence diagram](images/seq_example2.svg)
+![Example sequence diagram](../images/seq_example2.svg)
 
 And, of course it's not just sequence diagrams that can be created... All of d2/ dictim is available through this api!
 
