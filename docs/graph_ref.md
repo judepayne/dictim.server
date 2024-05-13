@@ -4,7 +4,10 @@
 
 As the name suggests this api models the boxes and arrows as a graph, where the boxes are nodes and the arrows edges.
 
-You should send a POST request to the `/graph` route with a json map with the following keys.
+You should send a POST request to the `/graph/json` route with a json map with the following keys.
+
+> [!NOTE]
+> There is also a /graph/edn route which works identically except the concept should be posted in edn format with the http MIME content type of `application/edn`.
 
 *Manatory keys:*
 
@@ -299,7 +302,7 @@ curl --header "Content-Type: application/json" \
 		     }],
             "node->key": "id"
 		 }' \
-  http://localhost:5001/graph > out.svg
+  http://localhost:5001/graph/json > out.svg
 ```
 
 and have the result written to a file called `out.svg`
@@ -365,7 +368,7 @@ curl --header "Content-Type: application/json" \
 		      }
 	            ]
 		 }' \
-  http://localhost:5001/graph > out.svg
+  http://localhost:5001/graph/json > out.svg
 ```
 
 Each `"edge"` is also just a json object. Unlike a `"node"` there are two keys that must always be present; `"src"` and `"dest"`, the source and destination of the edge. The value of these two keys must refer to the unique value of a node that we just talked about.
@@ -522,7 +525,7 @@ curl --header "Content-Type: application/json" \
 	     }
 	   ]
 	}' \
-  http://localhost:5001/graph > out.svg
+  http://localhost:5001/graph/json > out.svg
 ```
 
 </details>
@@ -727,7 +730,7 @@ curl --header "Content-Type: application/json" \
 	    }
 	  }
 	}' \
-  http://localhost:5001/graph > out.svg
+  http://localhost:5001/graph/json > out.svg
 ```
 
 </details>
@@ -909,7 +912,7 @@ curl --header "Content-Type: application/json" \
 	    }
 	  }
 	}' \
-  http://localhost:5001/graph > out.svg
+  http://localhost:5001/graph/json > out.svg
 ```
 
 </details>

@@ -4,7 +4,7 @@
 curl --header "Content-Type: application/json" \
   --request POST \
   --data '[["Peter","Friends",["tristram","T Biggs expanded",["tris","TAB"],["maddie","Madeline"],["tris","--","maddie","wedding bells?"],["tris","->","children","previously sired"],["children","the brood",["Oliver","Eldest",{"style":{"fill":"orange"}}],["Roof","Good footballer",{"shape":"person"}]]]]]' \
-  http://localhost:5001/dictim
+  http://localhost:5001/dictim/json
 
 
 ;; Try the dictim api for a sequence diagram
@@ -12,7 +12,7 @@ curl --header "Content-Type: application/json" \
 curl --header "Content-Type: application/json" \
   --request POST \
   --data '[{"shape":"sequence_diagram"},["alice","->","bob","What does it mean?"],["bob","->","alice","The ability to play bridge or\ngolf as if they were games."]]' \
-  http://localhost:5001/dictim
+  http://localhost:5001/dictim/json
 
 
 ;; Try the dictim api for another sequence diagram
@@ -36,7 +36,7 @@ curl --header "Content-Type: application/json" \
 	      "The ability to play bridge or\ngolf as if they were games."
 	    ]
 	  ]' \
-  http://localhost:5001/dictim
+  http://localhost:5001/dictim/json
 
 
 ;; Try the graph api - two different calls.
@@ -182,7 +182,7 @@ curl --header "Content-Type: application/json" \
 	    }
 	  }
 	}' \
-  http://localhost:5001/graph
+  http://localhost:5001/graph/json
 
 
 curl --header "Content-Type: application/json" \
@@ -202,7 +202,7 @@ curl --header "Content-Type: application/json" \
 		     }],
             "node->key": "id"
 		 }' \
-  http://localhost:5001/graph
+  http://localhost:5001/graph/json
 
 
 ;; Test https/ ssl support in the container.
@@ -225,4 +225,4 @@ curl --header "Content-Type: application/json" \
                      }],
             "node->key": "id"
                  }' \
-  https://localhost:5002/graph
+  https://localhost:5002/graph/json

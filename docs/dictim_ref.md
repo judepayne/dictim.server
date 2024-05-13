@@ -8,6 +8,9 @@ Therefore, the syntax of dictim in Clojure and the syntax of the 'json-ified' ve
 
 The dictim syntax is covered [here](https://github.com/judepayne/dictim/wiki/Dictim-Syntax) and there are further details about its 'json-fied' form on that page.
 
+> [!NOTE]
+> This page deals with `/json` routes for json format data. Each of these routes has an equivalent `/edn` route where `application/edn` data can be posted.
+
 For dictim templates, see lower down.
 
 ### Return values
@@ -42,7 +45,7 @@ curl --header "Content-Type: application/json" \
 	      "The ability to play bridge or\ngolf as if they were games."
 	    ]
 	  ]' \
-  http://localhost:5001/dictim
+  http://localhost:5001/dictim/json
 ```
 
 will produce the svg for this image.
@@ -57,7 +60,7 @@ A more complex sequence diagram example
 curl --header "Content-Type: application/json" \
   --request POST \
   --data '@test.json' \
-  http://localhost:5001/dictim
+  http://localhost:5001/dictim/json
 ````
 
 will produce the svg for this image.
@@ -290,5 +293,5 @@ curl --header "Content-Type: application/json" \
     }
   }
 }' \
-  http://localhost:5001/dictim-template
+  http://localhost:5001/dictim-template/json
 ````

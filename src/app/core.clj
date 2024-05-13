@@ -57,25 +57,55 @@
       (throw (IllegalArgumentException. ^String (str "d2 engine error:\n"(format-error d2 err))))
       out)))
 
+;; Pedestal automatically coerces map keys to keywords for application/json
+;; and this leaves a (graph) diagram spec in an inconsistent state (see doctstring
+;; of graph-spec->d2 about consistency). This fn undoes the coerce.
+;; also deserialization seems to lose single quotes around hex colors. restore them.
+
+(defn- css-hex-color? [c]
+  (re-matches #"#?([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$" c))
+
+(defn- fix-keyword-hex [form]
+  (clojure.walk/postwalk
+   (fn [x]
+     (cond
+       (keyword? x)
+       (name x)
+
+       (and (string? x) (css-hex-color? x))
+       (str "'" x "'")
+       
+       :else x))
+   form))
+
+(defn- fix-hex [form]
+  (clojure.walk/postwalk
+   (fn [x]
+     (if
+       (and (string? x) (css-hex-color? x))
+       (str "'" x "'")
+       x))
+   form))
+
+
+
 
 (defn graph->d2-handler
   [{:keys [headers json-params path-params body] :as request}]
 
   (if json-params
-    (let [spec (graph/fix-diagram-specs json-params)]
-      
-      (try
-        (let [d2 (graph/graph-spec->d2 spec)
-              svg (let [svg (d2->svg d2)]
-                    (if (or (nil? svg) (= "" svg))
-                      (throw (Exception. "The d2 engine returned nothing."))
-                      svg))]
-          {:status 200
-           :headers {"Content-Type" "image/svg+xml"}
-           :body svg})
-        (catch Exception e
-          {:status 400
-           :body (.getMessage e)})))
+    (try
+      (let [d2 (graph/graph-spec->d2 (fix-keyword-hex json-params))
+            svg (let [svg (d2->svg d2)]
+                  (if (or (nil? svg) (= "" svg))
+                    (throw (Exception. "The d2 engine returned nothing."))
+                    svg))]
+        {:status 200
+         :headers {"Content-Type" "image/svg+xml"}
+         :body svg})
+      (catch Exception e
+        {:status 400
+         :body (.getMessage e)}))
     {:status 400
      :body "No json in body, or invalid json."}))
 
@@ -84,7 +114,7 @@
   [{:keys [headers json-params path-params body] :as request}]
   (if json-params
     (try
-      (let [d2 (apply c/d2 json-params)
+      (let [d2 (apply c/d2 (fix-hex json-params))
             svg (d2->svg d2)]
         {:status 200
            :headers {"Content-Type" "image/svg+xml"}
@@ -102,7 +132,7 @@
     (try
       (let [{dictim :dictim
              directives :directives
-             template :template} json-params
+             template :template} (fix-hex json-params)
             dictim (tp/add-styles dictim template directives)
             d2 (apply c/d2 dictim)
             svg (d2->svg d2)]
@@ -120,7 +150,7 @@
   [{:keys [headers json-params path-params body] :as request}]
   (if json-params
     (try
-      (let [d2 (apply c/d2 json-params)]
+      (let [d2 (apply c/d2 (fix-hex json-params))]
         {:status 200
          :headers {"Content-Type" "text/plain"}
          :body d2})
@@ -146,19 +176,19 @@
      :body "No d2 in body."}))
 
 
-(def routes #{["/graph" :post
+(def routes #{["/graph/json" :post
                [(body-params/body-params) graph->d2-handler]
                :route-name :graph->d2]
 
-              ["/dictim" :post
+              ["/dictim/json" :post
                [(body-params/body-params) dictim-handler]
                :route-name :dictim]
 
-              ["/dictim-template" :post
+              ["/dictim-template/json" :post
                [(body-params/body-params) dictim-template-handler]
                :route-name :dictim-template]
 
-              ["/conversions/dictim-to-d2" :post
+              ["/conversions/dictim-to-d2/json" :post
                [(body-params/body-params) dictim->d2-handler]
                :route-name :dictim->d2]
 

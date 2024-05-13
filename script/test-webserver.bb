@@ -5,7 +5,7 @@
 
 (def status
   (->
-   (http/post "http://localhost:5001/graph"
+   (http/post "http://localhost:5001/graph/json"
               {:headers {:content-type "application/json"
                          "Accept" "image/svg+xml"}
                :body
@@ -32,7 +32,7 @@
 
 (when-not
     (=
-     (-> (http/post "http://localhost:5001/conversions/dictim-to-d2"
+     (-> (http/post "http://localhost:5001/conversions/dictim-to-d2/json"
                     {:headers {:content-type "application/json"
                                "Accept" "text/plain"}
                      :body
@@ -52,7 +52,7 @@ golf as if they were games.
 
 (when-not
     (= (->
-        (http/post "http://localhost:5001/dictim"
+        (http/post "http://localhost:5001/dictim/json"
                    {:headers {:content-type "application/json"
                               "Accept" "image/svg+xml"}
                     :body

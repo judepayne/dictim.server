@@ -31,7 +31,7 @@ curl --header "Content-Type: application/json" \
 	    "This is a comment"
 	    ]
           ]' \
-  http://localhost:5001/conversions/dictim-to-d2
+  http://localhost:5001/conversions/dictim-to-d2/json
 ````
 
 results in an `"text/plain"` response of
@@ -43,6 +43,8 @@ bob -> alice: The ability to play bridge or
 golf as if they were games.
 # This is a comment
 ````
+
+For `application/edn`, use the `dictim-to-d2/edn` route instead
 
 
 #### Return Values
