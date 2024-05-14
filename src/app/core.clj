@@ -57,26 +57,12 @@
       (throw (IllegalArgumentException. ^String (str "d2 engine error:\n"(format-error d2 err))))
       out)))
 
-;; Pedestal automatically coerces map keys to keywords for application/json
-;; and this leaves a (graph) diagram spec in an inconsistent state (see doctstring
-;; of graph-spec->d2 about consistency). This fn undoes the coerce.
-;; also deserialization seems to lose single quotes around hex colors. restore them.
+
+;; Cheshire deserialization seems to lose single quotes around hex colors. restore them.
 
 (defn- css-hex-color? [c]
   (re-matches #"#?([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$" c))
 
-(defn- fix-keyword-hex [form]
-  (clojure.walk/postwalk
-   (fn [x]
-     (cond
-       (keyword? x)
-       (name x)
-
-       (and (string? x) (css-hex-color? x))
-       (str "'" x "'")
-       
-       :else x))
-   form))
 
 (defn- fix-hex [form]
   (clojure.walk/postwalk
@@ -88,113 +74,203 @@
    form))
 
 
+(defn- bad [msg]
+  {:status 400
+   :body msg})
 
 
-(defn graph->d2-handler
-  [{:keys [headers json-params path-params body] :as request}]
+(def ^:private bad-json (bad "No json in body, or invalid json."))
 
+
+(def ^:private bad-edn (bad "No edn in body, or invalid edn."))
+
+
+(defn- good [content-type content]
+  {:status 200
+   :headers {"Content-Type" content-type}
+   :body content})
+
+
+(def ^:private good-svg (partial good "image/svg+xml"))
+
+
+(def ^:private good-text (partial good "text/plain"))
+
+
+(def ^:private good-json (partial good "application/json"))
+
+
+(def ^:private good-edn (partial good "application/edn"))
+
+;; the handlers
+
+(defn graph->d2-json
+  [{:keys [json-params] :as request}]
   (if json-params
     (try
-      (let [d2 (graph/graph-spec->d2 (fix-keyword-hex json-params))
+      (let [d2 (graph/graph-spec->d2 (fix-hex json-params))
             svg (let [svg (d2->svg d2)]
                   (if (or (nil? svg) (= "" svg))
                     (throw (Exception. "The d2 engine returned nothing."))
                     svg))]
-        {:status 200
-         :headers {"Content-Type" "image/svg+xml"}
-         :body svg})
-      (catch Exception e
-        {:status 400
-         :body (.getMessage e)}))
-    {:status 400
-     :body "No json in body, or invalid json."}))
+        (good-svg svg))
+      (catch Exception e (-> e .getMessage bad)))
+    bad-json))
 
 
-(defn dictim-handler
-  [{:keys [headers json-params path-params body] :as request}]
-  (if json-params
+(defn graph->d2-edn
+  [{:keys [edn-params] :as request}]
+  (if edn-params
     (try
-      (let [d2 (apply c/d2 (fix-hex json-params))
-            svg (d2->svg d2)]
-        {:status 200
-           :headers {"Content-Type" "image/svg+xml"}
-           :body svg})
-      (catch Exception e
-        {:status 400
-         :body (.getMessage e)}))
-    {:status 400
-     :body "No json in body, or invalid json."}))
+      (let [d2 (graph/graph-spec->d2 (fix-hex edn-params))
+            svg (let [svg (d2->svg d2)]
+                  (if (or (nil? svg) (= "" svg))
+                    (throw (Exception. "The d2 engine returned nothing."))
+                    svg))]
+        (good-svg svg))
+      (catch Exception e (-> e .getMessage bad)))
+    bad-edn))
 
 
-(defn dictim-template-handler
-  [{:keys [headers json-params path-params body] :as request}]
-  (if json-params
-    (try
-      (let [{dictim :dictim
-             directives :directives
-             template :template} (fix-hex json-params)
-            dictim (tp/add-styles dictim template directives)
-            d2 (apply c/d2 dictim)
-            svg (d2->svg d2)]
-        {:status 200
-         :headers {"Content-Type" "image/svg+xml"}
-         :body svg})
-      (catch Exception e
-        {:status 400
-         :body (.getMessage e)}))
-    {:status 400
-     :body "No json in body, or invalid json."}))
-
-
-(defn dictim->d2-handler
-  [{:keys [headers json-params path-params body] :as request}]
+(defn dictim-json
+  [{:keys [json-params] :as request}]
   (if json-params
     (try
       (let [d2 (apply c/d2 (fix-hex json-params))]
-        {:status 200
-         :headers {"Content-Type" "text/plain"}
-         :body d2})
-      (catch Exception e
-        {:status 400
-         :body (.getMessage e)}))
-    {:status 400
-     :body "No json in body, or invalid json."}))
+        (good-svg (d2->svg d2)))
+      (catch Exception e (-> e .getMessage bad)))
+    bad-json))
 
 
-(defn d2->dictim-handler
-  [{:keys [headers json-params path-params body] :as request}]
-  (if-let [d2 (slurp (:body request))]
+(defn dictim-edn
+  [{:keys [edn-params] :as request}]
+  (if edn-params
     (try
-      (let [dict (j/to-json (p/dictim d2))]
-        {:status 200
-         :headers {"Content-Type" "text/plain"}
-         :body dict})
-      (catch Exception e
-        {:status 400
-         :body (.getMessage e)}))
-    {:status 400
-     :body "No d2 in body."}))
+      (let [d2 (apply c/d2 (fix-hex edn-params))]
+        (good-svg (d2->svg d2)))
+      (catch Exception e (-> e .getMessage bad)))
+    bad-json))
+
+
+(defn dictim-template-json
+  [{:keys [json-params] :as request}]
+  (if json-params
+    (try
+      (let [jp (fix-hex json-params)
+            dictim (or (:dictim jp) (get jp "dictim"))
+            directives (or (:directives jp) (get jp "directives"))
+            template (or (:template jp) (get jp "template"))
+            dictim (tp/add-styles dictim template directives)
+            d2 (apply c/d2 dictim)]
+        (good-svg (d2->svg d2)))
+      (catch Exception e (-> e .getMessage bad)))
+    bad-json))
+
+
+(defn dictim-template-edn
+  [{:keys [edn-params] :as request}]
+  (if edn-params
+    (try
+      (let [jp (fix-hex edn-params)
+            dictim (or (:dictim jp) (get jp "dictim"))
+            directives (or (:directives jp) (get jp "directives"))
+            template (or (:template jp) (get jp "template"))
+            dictim (tp/add-styles dictim template directives)
+            d2 (apply c/d2 dictim)]
+        (good-svg (d2->svg d2)))
+      (catch Exception e (-> e .getMessage bad)))
+    bad-json))
+
+
+(defn dictim->d2-json
+  [{:keys [json-params] :as request}]
+  (if json-params
+    (try
+      (good-text (apply c/d2 (fix-hex json-params)))
+      (catch Exception e (-> e .getMessage bad)))
+    bad-json))
+
+
+(defn dictim->d2-edn
+  [{:keys [edn-params] :as request}]
+  (if edn-params
+    (try
+      (good-text (apply c/d2 (fix-hex edn-params)))
+      (catch Exception e (-> e .getMessage bad)))
+    bad-edn))
+
+
+(defn d2->dictim-json
+  [{:keys [body] :as request}]
+  (if-let [d2 (slurp body)]
+    (try
+      (good-json (j/to-json (p/dictim d2)))
+      (catch Exception e (-> e .getMessage bad)))
+    (bad "No d2 in body.")))
+
+
+(defn d2->dictim-edn
+  [{:keys [body] :as request}]
+  (if-let [d2 (slurp body)]
+    (try
+      (good-edn (pr-str (p/dictim d2)))
+      (catch Exception e (-> e .getMessage bad)))
+    (bad "No d2 in body.")))
+
+
+;; Does not convert map keys to keywords for json
+(def tweaked-body-params
+  (body-params/body-params
+   (body-params/default-parser-map :json-options {:key-fn identity})))
 
 
 (def routes #{["/graph/json" :post
-               [(body-params/body-params) graph->d2-handler]
-               :route-name :graph->d2]
+               [tweaked-body-params
+                graph->d2-json]
+               :route-name :graph->d2-json]
+
+              ["/graph/edn" :post
+               [(body-params/body-params)
+                graph->d2-edn]
+               :route-name :graph->d2-edn]
 
               ["/dictim/json" :post
-               [(body-params/body-params) dictim-handler]
-               :route-name :dictim]
+               [tweaked-body-params
+                dictim-json]
+               :route-name :dictim-json]
+
+              ["/dictim/edn" :post
+               [tweaked-body-params
+                dictim-edn]
+               :route-name :dictim-edn]
 
               ["/dictim-template/json" :post
-               [(body-params/body-params) dictim-template-handler]
-               :route-name :dictim-template]
+               [tweaked-body-params
+                dictim-template-json]
+               :route-name :dictim-template-json]
+
+              ["/dictim-template/edn" :post
+               [tweaked-body-params
+                dictim-template-edn]
+               :route-name :dictim-template-edn]
 
               ["/conversions/dictim-to-d2/json" :post
-               [(body-params/body-params) dictim->d2-handler]
-               :route-name :dictim->d2]
+               [tweaked-body-params
+                dictim->d2-json]
+               :route-name :dictim->d2-json]
 
-              ["/conversions/d2-to-dictim" :post
-               d2->dictim-handler
-               :route-name :d2->dictim]})
+              ["/conversions/dictim-to-d2/edn" :post
+               [tweaked-body-params
+                dictim->d2-edn]
+               :route-name :dictim->d2-edn]
+
+              ["/conversions/d2-to-dictim/json" :post
+               d2->dictim-json
+               :route-name :d2->dictim-json]
+
+              ["/conversions/d2-to-dictim/edn" :post
+               d2->dictim-edn
+               :route-name :d2->dictim-edn]})
 
 
 (def service-map

@@ -44,7 +44,22 @@ golf as if they were games.
 # This is a comment
 ````
 
+#### To send edn rather than json
+
 For `application/edn`, use the `dictim-to-d2/edn` route instead
+
+````bash
+curl --header "Content-Type: application/edn" \
+  --request POST \
+  --data '[{"shape" "sequence_diagram"}
+	       ["alice" "->" "bob" "What does it mean?"]
+	       ["bob"
+	        "->"
+	        "alice"
+	        "The ability to play bridge or\ngolf as if they were games."]
+	       ["comment" "This is a comment"]]' \
+  http://localhost:5001/conversions/dictim-to-d2/edn
+````
 
 
 #### Return Values
@@ -53,7 +68,7 @@ Successful requests will result into a 200 response with a Content-Type of `text
 
 Unsuccessful requests will result in a 400 response with the error message as the body.
 
-A 401 Internal Server Error generally means that the dictim sent was invalid (json).
+A 401 Internal Server Error generally means that the dictim sent was invalid (json/ edn).
 
 
 ### d2 to dictim
@@ -65,13 +80,23 @@ curl --header "Content-Type: text/plain" \
   --request POST \
   --data 'hello: jude
           x -> y: a connection' \
-  http://localhost:5001/conversions/d2-to-dictim
+  http://localhost:5001/conversions/d2-to-dictim/json
 ````
 
 results in an `"application/json"` response of
 
 ````json
 [["hello","jude"],["x","->","y","a connection"]]
+````
+
+#### To get back edn rather than json
+
+````bash
+curl --header "Content-Type: text/plain" \
+  --request POST \
+  --data 'hello: jude
+          x -> y: a connection' \
+  http://localhost:5001/conversions/d2-to-dictim/edn
 ````
 
 

@@ -7,7 +7,8 @@ As the name suggests this api models the boxes and arrows as a graph, where the 
 You should send a POST request to the `/graph/json` route with a json map with the following keys.
 
 > [!NOTE]
-> There is also a /graph/edn route which works identically except the concept should be posted in edn format with the http MIME content type of `application/edn`.
+> There is also a /graph/edn route which works identically except the concept should be posted in edn format with the http MIME content type of `application/edn`. See examples throughout this page.
+> With edn, your have the option of using either strings or keywords as map keys. Both will work fine, but dictim.server does make an assumption that the choice is consistent, e.g. if data is specified with keyword keys, then any other part of the spec given to dictim.server that refers to particular keys in the data, will also use keywords.
 
 *Manatory keys:*
 
@@ -309,6 +310,50 @@ and have the result written to a file called `out.svg`
 
 
 <img src="../images/graphtutorial2.svg" width="400">
+
+
+#### Edn eqivalent
+
+The edn quivalent of the above command is
+
+```bash
+curl --header "Content-Type: application/edn" \
+  --request POST \
+  --data '{"nodes"
+            [{"id" "app12872",
+              "name" "Trade pad",
+              "owner" "Lakshmi",
+              "dept" "Finance",
+              "functions" ["Position Keeping" "Quoting"],
+              "tco" 1200000,
+              "process" "p.112"}],
+            "node->key" "id"}' \
+  http://localhost:5001/graph/edn > out.svg
+```
+
+dictim.server is quite relaxed, about string keys or keyword keys asides from the requirement for consistency mentioned in the note at the top of this page.
+
+This also works fine:
+
+
+```bash
+curl --header "Content-Type: application/edn" \
+  --request POST \
+  --data '{"nodes"
+           [{:id "app12872"
+             :name "Trade pad"
+             :owner "Lakshmi"
+             :dept "Finance"
+             :functions ["Position Keeping" "Quoting"]
+             :tco 1200000
+             :process "p.112"}]
+           "node->key" :id}' \
+  http://localhost:5001/graph/edn > out.svg
+```
+
+
+
+Back to the tutorial...
 
 
 As well as the `"node"` itself, we must have a `"node->key"` entry in the diagram spec or dictim.server will return an error.
@@ -913,6 +958,84 @@ curl --header "Content-Type: application/json" \
 	  }
 	}' \
   http://localhost:5001/graph/json > out.svg
-```
+````
 
 </details>
+
+
+## Edn graph route
+
+The previous example converted to edn:
+
+```bash
+curl --header "Content-Type: application/edn" \
+  --request POST \
+  --data '{"nodes"
+ [{"id" "app12872",
+   "name" "Trade pad",
+   "owner" "Lakshmi",
+   "dept" "Finance",
+   "functions" ["Position Keeping" "Quoting"],
+   "tco" 1200000,
+   "process" "p.112"}
+  {"id" "app12873",
+   "name" "Data Source",
+   "owner" "India",
+   "dept" "Securities",
+   "functions" ["Booking" "Order Mgt"],
+   "tco" 1100000,
+   "process" "p.114"}
+  {"id" "app12874",
+   "name" "Crypto Bot",
+   "owner" "Joesph",
+   "dept" "Equities",
+   "functions" ["Accounting" "Booking"],
+   "tco" 500000,
+   "process" "p.112"}
+  {"id" "app12875",
+   "name" "Data Solar",
+   "owner" "Deepak",
+   "dept" "Securities",
+   "functions" ["Position Keeping" "Data Master"],
+   "tco" 1000000,
+   "process" "p.114"}
+  {"id" "app12876",
+   "name" "Data Solar",
+   "owner" "Lakshmi",
+   "dept" "Risk",
+   "functions" ["Accounting" "Data Master"],
+   "tco" 1700000,
+   "process" "p.114"}],
+ "edges"
+ [{"src" "app12874",
+   "dest" "app12875",
+   "data-type" "security reference"}
+  {"src" "app12874", "dest" "app12876", "data-type" "quotes"}
+  {"src" "app12875", "dest" "app12875", "data-type" "instructions"}
+  {"src" "app12874", "dest" "app12872", "data-type" "instructions"}
+  {"src" "app12875", "dest" "app12874", "data-type" "client master"}
+  {"src" "app12875", "dest" "app12874", "data-type" "allocations"}],
+ "node->key" "id",
+ "node->container" "dept",
+ "container->parent"
+ {"Finance" "2LOD",
+  "Risk" "2LOD",
+  "Securities" "FO",
+  "Equities" "FO",
+  "FO" "Company",
+  "2LOD" "Company"},
+ "node-specs"
+ [["contains" "functions" "Accounting"]
+  {"label" {"key" "owner"},
+   "style.fill" "'#f4a261'",
+   "style.border-radius" 8}
+  ["=" "dept" "Equities"]
+  {"label" {"key" "owner"}}
+  "else"
+  {"label" {"key" "name"}}],
+ "edge-specs" ["else" {"label" {"key" "data-type"}}],
+ "container->attrs" {"Securities" {"style.fill" "'#d6edd5'"}}}' \
+  http://localhost:5001/graph/edn > out.svg
+```
+
+Note the `"Content-Type: application/edn"` and use of the `graph/edn` route.

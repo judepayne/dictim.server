@@ -8,9 +8,6 @@ Therefore, the syntax of dictim in Clojure and the syntax of the 'json-ified' ve
 
 The dictim syntax is covered [here](https://github.com/judepayne/dictim/wiki/Dictim-Syntax) and there are further details about its 'json-fied' form on that page.
 
-> [!NOTE]
-> This page deals with `/json` routes for json format data. Each of these routes has an equivalent `/edn` route where `application/edn` data can be posted.
-
 For dictim templates, see lower down.
 
 ### Return values
@@ -52,8 +49,25 @@ will produce the svg for this image.
 
 ![Example sequence diagram](../images/seq_example.svg)
 
+### For edn
 
-A more complex sequence diagram example
+Here's the quivalent on the above, but posting edn rather than json
+
+````bash
+curl --header "Content-Type: application/edn" \
+  --request POST \
+  --data '[{"shape" "sequence_diagram"}
+           ["alice" "->" "bob" "What does it mean?"]
+           ["bob"
+            "->"
+            "alice"
+            "The ability to play bridge or\ngolf as if they were games."]
+           ["comment" "This is a comment"]]' \
+  http://localhost:5001/dictim/edn
+````
+
+
+### More complex sequence diagram example
 
 
 ````bash
@@ -294,4 +308,29 @@ curl --header "Content-Type: application/json" \
   }
 }' \
   http://localhost:5001/dictim-template/json
+````
+
+#### Edn templates
+
+
+````bash
+curl --header "Content-Type: application/edn" \
+  --request POST \
+  --data '{"dictim"
+            [["Process View"
+              ["p113" ["app14149" "Solar Wind"] ["app14027" "Leventine Sky"]]
+              ["p114" ["app14181" "eBed"] ["app14029" "Storm"]]
+              ["p113" "->" "p114" "various flows"]]],
+           "template"
+            [["and"
+              ["=" "element-type" "shape"]
+              ["or" ["=" "key" "app14181"] ["=" "key" "app14027"]]]
+             {"class" "lemony"}
+             ["and" ["=" "element-type" "shape"]]
+             {"style" {"fill" "aliceblue"}}],
+           "directives"
+            {"direction" "right",
+             "classes"
+             {"lemony" {"style" {"fill" "lightblue", "border-radius" 5}}}}}' \
+  http://localhost:5001/dictim-template/edn
 ````
