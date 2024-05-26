@@ -63,14 +63,14 @@
     "FO" "Company",
     "2LOD" "Company"},
    :node-specs [["=" :dept "Equities"] {:label {:key :owner}}
-                ["contains" :functions "Accounting"] {:style.fill "'#f4a261'", :border-radius 8}
+                ["contains" :functions "Accounting"] {:style.fill "'#f4a261'", :style.border-radius 8}
                 :else {:label {:key :name}}]
    :edge-specs [:else {:label {:key :data-type}}]
    :container->attrs {"Securities" {:style.fill "'#d6edd5'"}}})
 
 
 (def d2
-  "Company:   {\n  FO:   {\n    Securities:   {\n      style.fill: '#d6edd5'\n      app12873: Data Source\n      app12875: Data Solar\n    }\n    Equities:   {\n      app12874: Joesph\n    }\n  }\n  2LOD:   {\n    Finance:   {\n      app12872: Trade pad\n    }\n    Risk:   {\n      app12876:  {\n        style.fill: '#f4a261'\n        border-radius: 8\n      }\n    }\n  }\n}\nCompany.FO.Equities.app12874 -> Company.FO.Securities.app12875: security reference\nCompany.FO.Equities.app12874 -> Company.2LOD.Risk.app12876: quotes\nCompany.FO.Securities.app12875 -> Company.FO.Securities.app12875: instructions\nCompany.FO.Equities.app12874 -> Company.2LOD.Finance.app12872: instructions\nCompany.FO.Securities.app12875 -> Company.FO.Equities.app12874: client master\nCompany.FO.Securities.app12875 -> Company.FO.Equities.app12874: allocations")
+  "Company:   {\n  FO:   {\n    Securities:   {\n      style.fill: '#d6edd5'\n      app12873: Data Source\n      app12875: Data Solar\n    }\n    Equities:   {\n      app12874: Joesph\n    }\n  }\n  2LOD:   {\n    Finance:   {\n      app12872: Trade pad\n    }\n    Risk:   {\n      app12876:  {\n        style.fill: '#f4a261'\n        style.border-radius: 8\n      }\n    }\n  }\n}\nCompany.FO.Equities.app12874 -> Company.FO.Securities.app12875: security reference\nCompany.FO.Equities.app12874 -> Company.2LOD.Risk.app12876: quotes\nCompany.FO.Securities.app12875 -> Company.FO.Securities.app12875: instructions\nCompany.FO.Equities.app12874 -> Company.2LOD.Finance.app12872: instructions\nCompany.FO.Securities.app12875 -> Company.FO.Equities.app12874: client master\nCompany.FO.Securities.app12875 -> Company.FO.Equities.app12874: allocations")
 
 
 (deftest valid-d2
