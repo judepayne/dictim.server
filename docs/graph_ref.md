@@ -2,975 +2,321 @@
 
 ## API reference
 
-As the name suggests this api models the boxes and arrows as a graph, where the boxes are nodes and the arrows edges.
+Expressing a diagram as a graph.
 
-You should send a POST request to the `/graph/json` route with a json map with the following keys.
+This guide will show example of sending POST requests to the `/graph/json` route. The `/graph/edn` route has idnetical functionality, but the differences are that you should POST an edn map rather than an json object and set the MIME content type to `application/edn` rather than `application/json`.
 
 > [!NOTE]
-> There is also a /graph/edn route which works identically except the concept should be posted in edn format with the http MIME content type of `application/edn`. See examples throughout this page.
 > With edn, your have the option of using either strings or keywords as map keys. Both will work fine, but dictim.server does make an assumption that the choice is consistent, e.g. if data is specified with keyword keys, then any other part of the spec given to dictim.server that refers to particular keys in the data, will also use keywords.
 
-*Manatory keys:*
+The graph apis (both json and edn) are for expressing the shapes, containers and connections in your final diagram using graph notation, which is often a very antural way to think about a set of boxes (nodes) connected by arrows (edges). The graph api(s) is a higher level api than the dictim api(s). It's more suitable for programmatic use than raw dictimsince it comes with these advantages:
+
+- Rather than specify dictim, which is a nested data format, the graph api 'flattens out' the data.
+- You can specify the shapes, containers and connections modelled as data which is natural to their full business meaningful representation.
+- attributes in the dictim/ d2 that control how elements are styled, can be set based on the business data using dictim template functionality. This means that styling can be set from (business) data which is itself does not make it directly into the dictim/ d2/ svg.
+
+The json object/ edn map posted to the `/graph/` apis as called a 'graphspec' (i.e. a representation of a graph). That graph is then converted to dictim which in turn is converted to d2 from which svg is prodcued and returned.
+
+A graphspec is specified as follows:
+
+### Mandatory keys:
 
 | key | expanation |
 | --- | ---------- |
-| `"nodes"` | a json array of json objectts, each object being a representation of one node. The objects don't have to be homogenous (i.e. have the same keys) but often are if you representing multiple instances of the same type of thing. |
-| `"edges"` | an array of objects, each object being a representation of one edge. Each edge must have `"src"` and `"dest"` keys and any other keys you need to model the edge. Again, they don't need to be homogenous but often are. the `"src"` and `"dest:"` keys are how you tie edges to nodes. The value of each of these keys must be the value of one of (the same one across all nodes) keys in the objectss representing the nodes. The pointer to that (node) key is.. |
+| `"nodes"` | a json array of json objects, each object being a representation of a shape. The objects don't have to be homogenous (i.e. have the same keys) but often are if you representing multiple instances of the same type of thing. The objects can be arbitrarily nested. |
+| `"edges"` | an array of json objects, each object being a representation of one edge ('connection' in dictim/ d2 speak). Each edge must have `"src"` and `"dest"` keys and any other keys you need to model the edge. Again, they don't need to be homogenous but often are. Like `"node"`, arbitrary nested is fine. The `"src"` and `"dest:"` keys are how you tie edges to nodes. The values of the `"src"` and `"dest"` keys must tie to a unique way of identifying nodes..
 | `"node->key"` | this indicates the key to use in node objects to uniquely represent that node. The value returned must be unique for each node. Often this could be some sort of `"id"` key. |
 
-*Optional keys:*
 
-| key | expanation |
-| --- | ---------- |
-| `"node-specs"` & `"edge-specs"` | map nodes and edges to the visual styles that should be used to display that node or edge. The values of these two keys are a mini dsl (domain specific language) that requires further explanation. Please see below for more details. |
-| `"node->container"` | this indicates the key to use in node objects to map a node to its containing container (if it has/ needs one). |
-| `"container->parent"` | this should be a json object that maps containers to their parent container (if needed) and is how you create hierarchies of containers within containers in the diagram. |
-| `"container->attrs"` | a json objects that maps containers to the visual styles that should be used to display that container. |
+### Optional keys:
+#### Controlling node and edge styles
 
-An example of container->attrs:
-
-```json
-  "container->attrs": {
-    "Securities": {
-      "style.fill": "green"
-    }
-  }
-```
-
-is used to map a single container "Securities" to styling instructions that indicates that the fill color of that container should be green. Please see [this page](https://d2lang.com/tour/style) for details on styling options. You can also add a `"label"` entry to this json object, if you wish for the container to be labelled differently to its name.
+| key | explanation |
+| --- | ----------- |
+| `"node-template"` | a json array of *test* to *attributes* pairs, where *test* is a json array whose syntax is covered [here](https://github.com/judepayne/dictim/wiki/Template). *attributes* is a dictim attribute map, which are compiled to d2 styles. The dictim syntax (incl. for attributes) is covered [here](https://github.com/judepayne/dictim/wiki/Dictim-Syntax#Attributes). `"else"` can be used as a catch-all test that always evaluates to true. The specified tests will be applied to each of the `"nodes"` and the result used to determine the *attributes*/ styles to be applied to the node in the final diagram. `"label"` is a special key that can be used in an *attributes* json object and is used to control the node's label when a test condition is met. Its use is detailed below. |
+| `"edge-template"` | ditto, for edges. |
 
 
-### node-specs, edge-specs mini dsl
+#### Controlling containers
+
+| key | explanation |
+| --- | ----------- |
+| `"node->container"`| a single key (availble in each of the noes) used to group nodes into containers. |
+| `"container->parent"` | a json object that represents the hierarchy of containers within (grouping) containers, by mapping containers to their (enclosing) parent container. |
+| `"container->data"` | a jason object that maps a container to a json array which is the natural business-meaningful data represention of each of the containers. Used by |
+| `"container-template"` | as per `"node-template"` and `"edge-template"` but for containers. Applied to the data representations of each container specified under the previous key `"container->data"`. |
 
 
-The values supplied to the `"node-specs"` or `"edge-specs"` keys have the same form, a json array of paired <test> <result> entries.. e.g.:
+Whereas the dictim apis are for specifying dictim which is a representation of the desired diagram, the graph apis allow you to specify nodes, edges and containers using whatever is the natural business-meaningful data representation and then separately control styling via the template constructs. Similarly, how the nodes are grouped into containers is broken out under explicit keys. The advantages of this approach are:
+
+- **dynamism**  a tweak to the template keys/ container keys results in a differently styled/ organized diagram.
+- **richness** styling and grouping can be determined by data that itself is not represented in the final diagram.
+
+
+#### Directives
+
+| key | explanation |
+| --- | ----------- |
+| `"directives"`| a json object of attributes which should be merged into the dictim (and then compiled) into d2 at the top level. Example use cases are [`"vars"`](https://d2lang.com/tour/vars), [`"classes"`](https://d2lang.com/tour/classes) and `"direction"` |
+
+
+directives can be very useful for example as a single place to store all styles needed by the templates as classes and then use the `"class"` keyword throughout the templates.
+
+
+#### Template
+
+| key | explanation |
+| --- | ----------- |
+| `"template"` | a standard dictim tempate data structure, a json array. Unlike `"node-template"`, `"edge-template"` and `"container-template"` which operate on the data representing nodes, edges and containers during formation of the dictim, `"template"` operates on the dictim post-formation. That means that you should use standard accessors: 'key' 'label' 'attrs' 'children' 'keys' & 'element-type'. Attributes yielded by matching `"template"` tests will be merged into the dictim with lower precedence than attributes yielded by `"node-template"`, `"edge-template"` or `"container-template" |
+
+Because of the lower precedence, `"template"` is using for creating 'background' styles, e.g. a standard styling that you wish to always be applied to diagrams.
+
+The syntax of templates, including the use of dictim accessors is covered [here](https://github.com/judepayne/dictim/wiki/Template).
+
+
+#### Controlling Labels
+
+`"label"` is a special key that can be specified in a json object *attributes* in a template. `"label"` is not in dictim attribute or d2 style syntax.
+
+When a `"label"` is specified, it controls the label applied to that node, container or connection. e.g.
 
 ````json
-.."node-specs": [<test1>, <result>, <test2>, <result2>, ...]
+{"label": "I am a standard label",
+ ... }
 ````
 
-When a test is satisfied (by a node or edge), the result is read and used to determine how that node or edge is styled in the final diagram.
+However, fixes labels are rarely that useful, hence ...
 
-The syntax is tests is covered [here](https://github.com/judepayne/dictim/wiki/Template) on the dictim wiki.
+#### String interpolation in *attributes*
 
-In json form (with dictim.server), a test might look like:
+String interpolation is provided by `java.util.Formatter`.
+
+When a label (or any other key in an *attributes* term in a template) is specified as a json array, that label is processed for string interpolation. e.g. (an *attributes* term in a `node-template`)
 
 ````json
-["=", "app_name", "Sunflower"]
+{"label": ["node id%s\n owner: %s" "app-id" "owner-name"],
+ ... }
 ````
 
-The wiki page, mentions just three operators: `"="` `"!="` and `"match"`. In addition to those, you may use `"contains"` `"doesnt-contain"` `">"` `"<"` `">="` and `"<="`.
+is an instruction to create a label where the first %s is replaced by the value under the key "app-id", and the second %s is replaced by the value under the key "owner-name".
 
-If, for example, one of your nodes is represented by this json object:
+When the node, container or connection data is represented by nested json objects, a json array of keys can be used as a path to the desired value. e.g.
 
-```json
-{"app_id": 4789,
- "capabilities": ["data mgt", "data conversion"],
- "owner": "Scott"}
-```
-
-then this test would be true for that node:
-
-```json
-["and", ["=", "owner", "Scott"], ["contains", "capabilities", "data mgt"]]
-```
-
-and the corresponding result would be interpreted and used to style the node.
-
-`"else"` is a special test which always evaluates to true for any node of edge, and would normally be placed in the second last position of a `"node-specs"` or `"edge-specs"` as a catch all.
+````json
+{"label": ["node id%s\n owner: %s", ["ids", "app-id"], "owner-name"],
+ ... }
+````
 
 
-The form of a result is a json object which can optionally have a `"label"` entry and any number of other entries. The other entries are assumed to be d2 (styling) attributes which are covered on dictim's syntax [wiki page](https://github.com/judepayne/dictim/wiki/Dictim-Syntax#Attributes).
-
-`"label"` which sets the label of the node (or edge) is a bit special and has further processing applied to it.
-
-When the value of `"label"` is a string, that is used for the label.
-
-When it's a json object, it is interpreted.
-
-```json
-{"key": "app_id"}
-```
-
-would result in the `"app_id"` of the node or edge being used as its label.
-
-```json
-{"key": ["app_id", "owner"]}
-```
-
-would result in a label which takes the `"app_id"` of the node or edge, and its `"owner"` and concatenating with a `\newline` in between.
+String interpolation may be useful in a range of situations, not just for labels. For example, d2 has "tooltip", "link" and "icon" all of which could be useful places to embed data into.
 
 
-### Return values
-
-Successful requests will result into a 200 response with a Content-Type of `image/svg+xml` and the svg of the image in the body.
-
-Unsuccessful requests will result in a 400 response with the error message as the body.
-
-A 401 Internal Server Error generally means that the json sent was invalid.
+### Example
 
 
+A json graphspec that can be passed to the `/graph/json` api
 
-## Tutorial
-
-
-Let's now build this example diagram one step at a time, by hand. This is of course not normally how you'd do it; rather you'd have code that generates the json diagram spec from data you have and pass the spec to dictim.server. Building by hand though is a good way to understand what all the keys in the diagram spec do.
-
-
-<img src="../images/graphtutorial1.svg" width="850">
-
-
-is an architecture diagram that was built from this diagram spec..
-
-<details><summary>Full diagram spec</summary>
-
-```json
+````json
 {
-"nodes":[
+  "nodes": [
     {
-      "id":"app12872",
-      "name":"Trade pad",
-      "owner":"Lakshmi",
-      "dept":"Finance",
-      "functions":[
-	"Position Keeping",
-	"Quoting"
+      "id": "app12872",
+      "name": "Trade pad",
+      "owner": "Lakshmi",
+      "dept": "Finance",
+      "functions": [
+        "Position Keeping",
+        "Quoting"
       ],
-      "tco":1200000,
-      "process":"p.112"
+      "tco": 1200000,
+      "process": "p.112"
     },
     {
-      "id":"app12873",
-      "name":"Data Source",
-      "owner":"India",
-      "dept":"Securities",
-      "functions":[
-	"Booking",
-	"Order Mgt"
+      "id": "app12873",
+      "name": "Data Source",
+      "owner": "India",
+      "dept": "Securities",
+      "functions": [
+        "Booking",
+        "Order Mgt"
       ],
-      "tco":1100000,
-      "process":"p.114"
+      "tco": 1100000,
+      "process": "p.114"
     },
     {
-      "id":"app12874",
-      "name":"Crypto Bot",
-      "owner":"Joesph",
-      "dept":"Equities",
-      "functions":[
-	"Accounting",
-	"Booking"
+      "id": "app12874",
+      "name": "Crypto Bot",
+      "owner": "Joesph",
+      "dept": "Equities",
+      "functions": [
+        "Accounting",
+        "Booking"
       ],
-      "tco":500000,
-      "process":"p.112"
+      "tco": 500000,
+      "process": "p.112"
     },
     {
-      "id":"app12875",
-      "name":"Data Solar",
-      "owner":"Deepak",
-      "dept":"Securities",
-      "functions":[
-	"Position Keeping",
-	"Data Master"
+      "id": "app12875",
+      "name": "Data Solar",
+      "owner": "Deepak",
+      "dept": "Securities",
+      "functions": [
+        "Position Keeping",
+        "Data Master"
       ],
-      "tco":1000000,
-      "process":"p.114"
+      "tco": 1000000,
+      "process": "p.114"
     },
     {
-      "id":"app12876",
-      "name":"Data Solar",
-      "owner":"Lakshmi",
-      "dept":"Risk",
-      "functions":[
-	"Accounting",
-	"Data Master"
+      "id": "app12876",
+      "name": "Data Solar",
+      "owner": "Lakshmi",
+      "dept": "Risk",
+      "functions": [
+        "Accounting",
+        "Data Master"
       ],
-      "tco":1700000,
-      "process":"p.114"
+      "tco": 1700000,
+      "process": "p.114"
     }
   ],
-  "edges":[
+  "node->key": "id",
+  "edges": [
     {
-      "src":"app12874",
-      "dest":"app12875",
-      "data-type":"security reference"
+      "src": "app12874",
+      "dest": "app12875",
+      "data-type": "security reference"
     },
     {
-      "src":"app12874",
-      "dest":"app12876",
-      "data-type":"quotes"
+      "src": "app12874",
+      "dest": "app12876",
+      "data-type": "quotes"
     },
     {
-      "src":"app12875",
-      "dest":"app12875",
-      "data-type":"instructions"
+      "src": "app12875",
+      "dest": "app12875",
+      "data-type": "instructions"
     },
     {
-      "src":"app12874",
-      "dest":"app12872",
-      "data-type":"instructions"
+      "src": "app12874",
+      "dest": "app12872",
+      "data-type": "instructions"
     },
     {
-      "src":"app12875",
-      "dest":"app12874",
-      "data-type":"client master"
+      "src": "app12875",
+      "dest": "app12874",
+      "data-type": "client master"
     },
     {
-      "src":"app12875",
-      "dest":"app12874",
-      "data-type":"allocations"
+      "src": "app12875",
+      "dest": "app12874",
+      "data-type": "allocations"
     }
   ],
-  "node->key":"id",
-  "node->container":"dept",
-  "container->parent":{
-    "Finance":"2LOD",
-    "Risk":"2LOD",
-    "Securities":"FO",
-    "Equities":"FO",
-    "FO":"Company",
-    "2LOD":"Company"
-  },
-  "node-specs":[
+  "node-template": [
     [
       "=",
       "dept",
       "Equities"
     ],
-    {"label":
-      {
-	"key": "owner"
-      }
-    },	    
+    {
+      "label": [
+        "The name is is %s",
+        "name"
+      ],
+      "style.fill": "blue"
+    },
     "else",
-    {"label":
-      {
-	"key": "name"
-      }
+    {
+      "label": [
+        "%s",
+        "name"
+      ]
     }
-  ],	  
-  "edge-specs":[
-     "else",
-     {"label":
-       {
-	 "key": "data-type"
-       }
-     }
-   ],
-  "container->attrs":{
-    "Securities":{
-      "style.fill":"'#d6edd5'"
+  ],
+  "edge-template": [
+    "else",
+    {
+      "label": [
+        "data type: %s",
+        "data-type"
+      ]
     }
-  }
+  ],
+  "node->container": "dept",
+  "container->parent": {
+    "Finance": "2LOD",
+    "Risk": "2LOD",
+    "Securities": "FO",
+    "Equities": "FO"
+  },
+  "container->data": {
+    "Securities": {
+      "head": "Amit Singh",
+      "revenue $Bn": 1.1
+    },
+    "Equities": {
+      "head": "Peter Nevitt",
+      "revenue $Bn": 0.55
+    },
+    "Risk": {
+      "head": "Amineer Singh",
+      "revenue $Bn": 0
+    },
+    "Finance": {
+      "head": "Cynthia Parcelle",
+      "revenue $Bn": 0
+    },
+    "2LOD": {
+      "head": "Markus Bauer",
+      "revenue $Bn": 0
+    },
+    "FO": {
+      "head": "Mia Fischer",
+      "revenue $Bn": 2.37
+    }
+  },
+  "container-template": [
+    [
+      ">",
+      "revenue $Bn",
+      1
+    ],
+    {
+      "style.fill": "'#f2e7da'"
+    },
+    [
+      ">",
+      "revenue $Bn",
+      0.5
+    ],
+    {
+      "style.fill": "'#faf6f2'"
+    }
+  ]
 }
-```
-
-</details>
-
-
-The `"nodes"` key is an array of nodes, each one being a json object of keys and values. Let look at one.
-
-```json
-{
-  "id":"app12872",
-  "name":"Trade pad",
-  "owner":"Lakshmi",
-  "dept":"Finance",
-  "functions":["Position Keeping", "Quoting"],
-  "tco":1200000,
-  "process":"p.112"
-}
-```
-
-Each node describes a box in the diagram. It's helpful to put more facts rather than less about the concept represented by the box; even some of those facts are not immediately represented in the diagram (e.g. the label of the box), because we're working with dynamic diagrams, we might choose to use one of those facts later e.g. in the label or to determine some styling aspect of how the box is represented.
-
-We can make a diagram out of just this one node. Let's talk to dictim server with `curl`
-
-```bash
-curl --header "Content-Type: application/json" \
-  --request POST \
-  --data '{"nodes":[
-		     {
-		       "id":"app12872",
-		       "name":"Trade pad",
-		       "owner":"Lakshmi",
-		       "dept":"Finance",
-		       "functions":[
-			 "Position Keeping",
-			 "Quoting"
-		       ],
-		       "tco":1200000,
-		       "process":"p.112"
-		     }],
-            "node->key": "id"
-		 }' \
-  http://localhost:5001/graph/json > out.svg
-```
-
-and have the result written to a file called `out.svg`
-
-
-<img src="../images/graphtutorial2.svg" width="400">
-
-
-#### Edn eqivalent
-
-The edn quivalent of the above command is
-
-```bash
-curl --header "Content-Type: application/edn" \
-  --request POST \
-  --data '{"nodes"
-            [{"id" "app12872",
-              "name" "Trade pad",
-              "owner" "Lakshmi",
-              "dept" "Finance",
-              "functions" ["Position Keeping" "Quoting"],
-              "tco" 1200000,
-              "process" "p.112"}],
-            "node->key" "id"}' \
-  http://localhost:5001/graph/edn > out.svg
-```
-
-dictim.server is quite relaxed, about string keys or keyword keys asides from the requirement for consistency mentioned in the note at the top of this page.
-
-This also works fine:
-
-
-```bash
-curl --header "Content-Type: application/edn" \
-  --request POST \
-  --data '{"nodes"
-           [{:id "app12872"
-             :name "Trade pad"
-             :owner "Lakshmi"
-             :dept "Finance"
-             :functions ["Position Keeping" "Quoting"]
-             :tco 1200000
-             :process "p.112"}]
-           "node->key" :id}' \
-  http://localhost:5001/graph/edn > out.svg
-```
-
-
-
-Back to the tutorial...
-
-
-As well as the `"node"` itself, we must have a `"node->key"` entry in the diagram spec or dictim.server will return an error.
-
-The `"node->key"` entry serves two purposes:
-- specifies the default label if no other label is specified by a `"node-specs"` entry.
-- uniquely identifies the node, which we'll need later when adding edges that have a source and destination.
-
-
-> [!NOTE]
-> Each node in a diagram spec must have one key in the json object representing it which is unique. `"node->key"` needs to be set to that key name.
-
-
-Let's now add in a second node and an edge between the two.
-
-```bash
-curl --header "Content-Type: application/json" \
-  --request POST \
-  --data '{"nodes":[
-		     {
-		       "id":"app12872",
-		       "name":"Trade pad",
-		       "owner":"Lakshmi",
-		       "dept":"Finance",
-		       "functions":[
-			 "Position Keeping",
-			 "Quoting"
-		       ],
-		       "tco":1200000,
-		       "process":"p.112"
-		     },
-		     {
-		       "id":"app12874",
-		       "name":"Crypto Bot",
-		       "owner":"Joesph",
-		       "dept":"Equities",
-		       "functions":[
-			 "Accounting",
-			 "Booking"
-		       ],
-		       "tco":500000,
-		       "process":"p.112"
-		     }],
-	    "edges":[
-	              {
-			"src":"app12874",
-			"dest":"app12872",
-			"data-type":"instructions"
-		      }],
-	    "node->key": "id",
-	    "node-specs":[
-		      "else",
-		      {"label":
-			{
-			  "key": "name"
-			}
-		      }
-	            ]
-		 }' \
-  http://localhost:5001/graph/json > out.svg
-```
-
-Each `"edge"` is also just a json object. Unlike a `"node"` there are two keys that must always be present; `"src"` and `"dest"`, the source and destination of the edge. The value of these two keys must refer to the unique value of a node that we just talked about.
-
-Beyond those two keys, the other entries making up an `"edge"` is arbitrary and can be as many as you want. As for `"nodes"` it's worth including more entries in each edge in case you need to use them later in your dynamic, evolving diagram, but in this example we've just added one `"data-type"` which represents the type of data flowing between two applications in our architecture diagram.
-
-We've also added a `"node-specs"` entry into the diagram spec, and inside it is an `"else"` (i.e. catch all) clause that tells dictim.server to use the `"name"` key's value from each node as the label of that node.
-
-Here's the diagram now.
-
-<img src="../images/graphtutorial3.svg" width="400">
-
- Let's add back in the other nodes, edges and an edge-spec that controls the labels used for the edges.
-
-The edge-spec:
-
-```json
-"edge-specs":[
-   "else",
-   {"label":
-     {
-       "key": "data-type"
-     }
-   }
- ]
-```
-
-<details>
-<summary>Full curl command</summary>
-
-```bash
-curl --header "Content-Type: application/json" \
-  --request POST \
-  --data '{
-  "nodes":[
-	    {
-	      "id":"app12872",
-	      "name":"Trade pad",
-	      "owner":"Lakshmi",
-	      "dept":"Finance",
-	      "functions":[
-		"Position Keeping",
-		"Quoting"
-	      ],
-	      "tco":1200000,
-	      "process":"p.112"
-	    },
-	    {
-	      "id":"app12873",
-	      "name":"Data Source",
-	      "owner":"India",
-	      "dept":"Securities",
-	      "functions":[
-		"Booking",
-		"Order Mgt"
-	      ],
-	      "tco":1100000,
-	      "process":"p.114"
-	    },
-	    {
-	      "id":"app12874",
-	      "name":"Crypto Bot",
-	      "owner":"Joesph",
-	      "dept":"Equities",
-	      "functions":[
-		"Accounting",
-		"Booking"
-	      ],
-	      "tco":500000,
-	      "process":"p.112"
-	    },
-	    {
-	      "id":"app12875",
-	      "name":"Data Solar",
-	      "owner":"Deepak",
-	      "dept":"Securities",
-	      "functions":[
-		"Position Keeping",
-		"Data Master"
-	      ],
-	      "tco":1000000,
-	      "process":"p.114"
-	    },
-	    {
-	      "id":"app12876",
-	      "name":"Data Solar",
-	      "owner":"Lakshmi",
-	      "dept":"Risk",
-	      "functions":[
-		"Accounting",
-		"Data Master"
-	      ],
-	      "tco":1700000,
-	      "process":"p.114"
-	    }
-	  ],
-	  "edges":[
-	    {
-	      "src":"app12874",
-	      "dest":"app12875",
-	      "data-type":"security reference"
-	    },
-	    {
-	      "src":"app12874",
-	      "dest":"app12876",
-	      "data-type":"quotes"
-	    },
-	    {
-	      "src":"app12875",
-	      "dest":"app12875",
-	      "data-type":"instructions"
-	    },
-	    {
-	      "src":"app12874",
-	      "dest":"app12872",
-	      "data-type":"instructions"
-	    },
-	    {
-	      "src":"app12875",
-	      "dest":"app12874",
-	      "data-type":"client master"
-	    },
-	    {
-	      "src":"app12875",
-	      "dest":"app12874",
-	      "data-type":"allocations"
-	    }
-	  ],
-	  "node->key":"id",
-	  "node-specs":[
-	    [
-              "=",
-	      "dept",
-	      "Equities"
-            ],
-	    {"label":
-	      {
-		"key": "owner"
-	      }
-	    },	    
-	    "else",
-	    {"label":
-	      {
-		"key": "name"
-	      }
-	    }
-	  ],	  
-	  "edge-specs":[
-	     "else",
-	     {"label":
-	       {
-		 "key": "data-type"
-	       }
-	     }
-	   ]
-	}' \
-  http://localhost:5001/graph/json > out.svg
-```
-
-</details>
-
-
-This is the diagram now
-
-<img src="../images/graphtutorial4.svg" width="850">
-
-Notice that there's no node labelled "Crypto Bot" any longer. That's because we also added in a second test clause into the `"node-specs"`
-
-```json
-[
-  "=",
-  "dept",
-  "Equities"
-],
-{"label":
-  {
-    "key": "owner"
-  }
-},	    
-```
-
-The condition part of this label instructions tell dictim.server that this instruction applies only to nodes where the value of the `"dept"` key is equals to "Equities", and when that is true to use the `"owner"` key from the node object rather than the default "name". Since this is a more specific test than the catch all `"else"`, it goes before that.
-
-All that's left to do now is put the container instructions back into the diagram spec that handle how nodes are positioned into containers, how those containers are themselves positioned inside other containers, and how all the containers should be styled.
-
-
-All this is handled with 3 additional keys. The first is `"node->container"` which indicates which key in each node is used to group the nodes into containers.
-
-```json
-	  "node->container":"dept",
-```
-
-The next is `"container->parent"` which provides the hierarchy of containers by mapping each container to its parent container.
-
-```json
-	  "container->parent":{
-	    "Finance":"2LOD",
-	    "Risk":"2LOD",
-	    "Securities":"FO",
-	    "Equities":"FO",
-	    "FO":"Company",
-	    "2LOD":"Company"
-	  },
-```
-
-and finally there is `"container->attrs"` which is a json object that maps containers to their styles.
-
-```json
-	  "container->attrs":{
-	    "Securities":{
-	      "style.fill":"'#d6edd5'"
-	    }
-	  }
-```
-Please note that in dictim, hex colors (e.g. '#d6edd5') must be single quoted because d2 interprets `#` as a special character indicating a comment.
-
-Now we're back at the original diagram!
-
-<details>
-<summary>Full curl command</summary>
-
-```bash
-curl --header "Content-Type: application/json" \
-  --request POST \
-  --data '{
-  "nodes":[
-	    {
-	      "id":"app12872",
-	      "name":"Trade pad",
-	      "owner":"Lakshmi",
-	      "dept":"Finance",
-	      "functions":[
-		"Position Keeping",
-		"Quoting"
-	      ],
-	      "tco":1200000,
-	      "process":"p.112"
-	    },
-	    {
-	      "id":"app12873",
-	      "name":"Data Source",
-	      "owner":"India",
-	      "dept":"Securities",
-	      "functions":[
-		"Booking",
-		"Order Mgt"
-	      ],
-	      "tco":1100000,
-	      "process":"p.114"
-	    },
-	    {
-	      "id":"app12874",
-	      "name":"Crypto Bot",
-	      "owner":"Joesph",
-	      "dept":"Equities",
-	      "functions":[
-		"Accounting",
-		"Booking"
-	      ],
-	      "tco":500000,
-	      "process":"p.112"
-	    },
-	    {
-	      "id":"app12875",
-	      "name":"Data Solar",
-	      "owner":"Deepak",
-	      "dept":"Securities",
-	      "functions":[
-		"Position Keeping",
-		"Data Master"
-	      ],
-	      "tco":1000000,
-	      "process":"p.114"
-	    },
-	    {
-	      "id":"app12876",
-	      "name":"Data Solar",
-	      "owner":"Lakshmi",
-	      "dept":"Risk",
-	      "functions":[
-		"Accounting",
-		"Data Master"
-	      ],
-	      "tco":1700000,
-	      "process":"p.114"
-	    }
-	  ],
-	  "edges":[
-	    {
-	      "src":"app12874",
-	      "dest":"app12875",
-	      "data-type":"security reference"
-	    },
-	    {
-	      "src":"app12874",
-	      "dest":"app12876",
-	      "data-type":"quotes"
-	    },
-	    {
-	      "src":"app12875",
-	      "dest":"app12875",
-	      "data-type":"instructions"
-	    },
-	    {
-	      "src":"app12874",
-	      "dest":"app12872",
-	      "data-type":"instructions"
-	    },
-	    {
-	      "src":"app12875",
-	      "dest":"app12874",
-	      "data-type":"client master"
-	    },
-	    {
-	      "src":"app12875",
-	      "dest":"app12874",
-	      "data-type":"allocations"
-	    }
-	  ],
-	  "node->key":"id",
-	  "node->container":"dept",
-	  "container->parent":{
-	    "Finance":"2LOD",
-	    "Risk":"2LOD",
-	    "Securities":"FO",
-	    "Equities":"FO",
-	    "FO":"Company",
-	    "2LOD":"Company"
-	  },
-	  "node-specs":[
-	    [
-              "=",
-	      "dept",
-	      "Equities"
-            ],
-	    {"label":
-	      {
-		"key": "owner"
-	      }
-	    },	    
-	    "else",
-	    {"label":
-	      {
-		"key": "name"
-	      }
-	    }
-	  ],	  
-	  "edge-specs":[
-	     "else",
-	     {"label":
-	       {
-		 "key": "data-type"
-	       }
-	     }
-	   ],
-	  "container->attrs":{
-	    "Securities":{
-	      "style.fill":"'#d6edd5'"
-	    }
-	  }
-	}' \
-  http://localhost:5001/graph/json > out.svg
-```
-
-</details>
-
-
-As a bonus and final step, let's add a conditional styling instruction under `"node-specs"` which styles nodes (application in our example) that contain the function 'Accounting' with a different fill and border radius.
-
-```json
-[
-  "contains",
-  "functions",
-  "Accounting"
-],
-{
-  "label":
-  {
-    "key": "owner"
-  },	       
-  "style.fill":"'#f4a261'",
-  "style.border-radius":8
-}
-```
-
-<img src="../images/graphtutorial5.svg" width="850">
-
-<details>
-<summary>Full curl command</summary>
-
-```bash
-curl --header "Content-Type: application/json" \
-  --request POST \
-  --data '{
-  "nodes":[
-	    {
-	      "id":"app12872",
-	      "name":"Trade pad",
-	      "owner":"Lakshmi",
-	      "dept":"Finance",
-	      "functions":[
-		"Position Keeping",
-		"Quoting"
-	      ],
-	      "tco":1200000,
-	      "process":"p.112"
-	    },
-	    {
-	      "id":"app12873",
-	      "name":"Data Source",
-	      "owner":"India",
-	      "dept":"Securities",
-	      "functions":[
-		"Booking",
-		"Order Mgt"
-	      ],
-	      "tco":1100000,
-	      "process":"p.114"
-	    },
-	    {
-	      "id":"app12874",
-	      "name":"Crypto Bot",
-	      "owner":"Joesph",
-	      "dept":"Equities",
-	      "functions":[
-		"Accounting",
-		"Booking"
-	      ],
-	      "tco":500000,
-	      "process":"p.112"
-	    },
-	    {
-	      "id":"app12875",
-	      "name":"Data Solar",
-	      "owner":"Deepak",
-	      "dept":"Securities",
-	      "functions":[
-		"Position Keeping",
-		"Data Master"
-	      ],
-	      "tco":1000000,
-	      "process":"p.114"
-	    },
-	    {
-	      "id":"app12876",
-	      "name":"Data Solar",
-	      "owner":"Lakshmi",
-	      "dept":"Risk",
-	      "functions":[
-		"Accounting",
-		"Data Master"
-	      ],
-	      "tco":1700000,
-	      "process":"p.114"
-	    }
-	  ],
-	  "edges":[
-	    {
-	      "src":"app12874",
-	      "dest":"app12875",
-	      "data-type":"security reference"
-	    },
-	    {
-	      "src":"app12874",
-	      "dest":"app12876",
-	      "data-type":"quotes"
-	    },
-	    {
-	      "src":"app12875",
-	      "dest":"app12875",
-	      "data-type":"instructions"
-	    },
-	    {
-	      "src":"app12874",
-	      "dest":"app12872",
-	      "data-type":"instructions"
-	    },
-	    {
-	      "src":"app12875",
-	      "dest":"app12874",
-	      "data-type":"client master"
-	    },
-	    {
-	      "src":"app12875",
-	      "dest":"app12874",
-	      "data-type":"allocations"
-	    }
-	  ],
-	  "node->key":"id",
-	  "node->container":"dept",
-	  "container->parent":{
-	    "Finance":"2LOD",
-	    "Risk":"2LOD",
-	    "Securities":"FO",
-	    "Equities":"FO",
-	    "FO":"Company",
-	    "2LOD":"Company"
-	  },
-	  "node-specs":[
-	    [
-              "contains",
-	      "functions",
-	      "Accounting"
-            ],
-	    {
-	     "label":
-	     {
-	       "key": "owner"
-	     },	       
-	     "style.fill":"'#f4a261'",
-	     "style.border-radius":8
-	     },	    
-	    [
-              "=",
-	      "dept",
-	      "Equities"
-            ],
-	    {"label":
-	      {
-		"key": "owner"
-	      }
-	    },	    
-	    "else",
-	    {"label":
-	      {
-		"key": "name"
-	      }
-	    }
-	  ],	  
-	  "edge-specs":[
-	     "else",
-	     {"label":
-	       {
-		 "key": "data-type"
-	       }
-	     }
-	   ],
-	  "container->attrs":{
-	    "Securities":{
-	      "style.fill":"'#d6edd5'"
-	    }
-	  }
-	}' \
-  http://localhost:5001/graph/json > out.svg
 ````
 
-</details>
+and the `edn` equivlant that could be passed to the `/graph/edn` api:
 
+<details>
+<summary>edn</summary>
 
-## Edn graph route
-
-The previous example converted to edn:
-
-```bash
-curl --header "Content-Type: application/edn" \
-  --request POST \
-  --data '{"nodes"
+````edn
+{"node->key" "id",
+ "node-template"
+ [["=" "dept" "Equities"]
+  {"label" ["The name is %s" "name"], "style.fill" "blue"}
+  "else"
+  {"label" ["%s" "name"]}],
+ "container->data"
+ {"Securities" {"head" "Amit Singh", "revenue $Bn" 1.1},
+  "Equities" {"head" "Peter Nevitt", "revenue $Bn" 0.55},
+  "Risk" {"head" "Amineer Singh", "revenue $Bn" 0},
+  "Finance" {"head" "Cynthia Parcelle", "revenue $Bn" 0},
+  "2LOD" {"head" "Markus Bauer", "revenue $Bn" 0},
+  "FO" {"head" "Mia Fischer", "revenue $Bn" 2.37}},
+ "nodes"
  [{"id" "app12872",
    "name" "Trade pad",
    "owner" "Lakshmi",
@@ -1006,6 +352,7 @@ curl --header "Content-Type: application/edn" \
    "functions" ["Accounting" "Data Master"],
    "tco" 1700000,
    "process" "p.114"}],
+ "node->container" "dept",
  "edges"
  [{"src" "app12874",
    "dest" "app12875",
@@ -1015,27 +362,305 @@ curl --header "Content-Type: application/edn" \
   {"src" "app12874", "dest" "app12872", "data-type" "instructions"}
   {"src" "app12875", "dest" "app12874", "data-type" "client master"}
   {"src" "app12875", "dest" "app12874", "data-type" "allocations"}],
- "node->key" "id",
- "node->container" "dept",
+ "container-template"
+ [[">" "revenue $Bn" 1]
+  {"style.fill" "'#f2e7da'"}
+  [">" "revenue $Bn" 0.5]
+  {"style.fill" "'#faf6f2'"}],
+ "edge-template" ["else" {"label" ["data type: %s" "data-type"]}],
  "container->parent"
  {"Finance" "2LOD",
   "Risk" "2LOD",
   "Securities" "FO",
-  "Equities" "FO",
-  "FO" "Company",
-  "2LOD" "Company"},
- "node-specs"
- [["contains" "functions" "Accounting"]
-  {"label" {"key" "owner"},
-   "style.fill" "'#f4a261'",
-   "style.border-radius" 8}
-  ["=" "dept" "Equities"]
-  {"label" {"key" "owner"}}
-  "else"
-  {"label" {"key" "name"}}],
- "edge-specs" ["else" {"label" {"key" "data-type"}}],
- "container->attrs" {"Securities" {"style.fill" "'#d6edd5'"}}}' \
-  http://localhost:5001/graph/edn > out.svg
-```
+  "Equities" "FO"}}
+````
+</details>
 
-Note the `"Content-Type: application/edn"` and use of the `graph/edn` route.
+Let's use the json example in a curl command like this:
+
+<details>
+<summary>full curl command</summary>
+
+````bash
+curl --header "Content-Type: application/json" \
+  --request POST \
+  --data '{
+  "nodes": [
+    {
+      "id": "app12872",
+      "name": "Trade pad",
+      "owner": "Lakshmi",
+      "dept": "Finance",
+      "functions": [
+        "Position Keeping",
+        "Quoting"
+      ],
+      "tco": 1200000,
+      "process": "p.112"
+    },
+    {
+      "id": "app12873",
+      "name": "Data Source",
+      "owner": "India",
+      "dept": "Securities",
+      "functions": [
+        "Booking",
+        "Order Mgt"
+      ],
+      "tco": 1100000,
+      "process": "p.114"
+    },
+    {
+      "id": "app12874",
+      "name": "Crypto Bot",
+      "owner": "Joesph",
+      "dept": "Equities",
+      "functions": [
+        "Accounting",
+        "Booking"
+      ],
+      "tco": 500000,
+      "process": "p.112"
+    },
+    {
+      "id": "app12875",
+      "name": "Data Solar",
+      "owner": "Deepak",
+      "dept": "Securities",
+      "functions": [
+        "Position Keeping",
+        "Data Master"
+      ],
+      "tco": 1000000,
+      "process": "p.114"
+    },
+    {
+      "id": "app12876",
+      "name": "Data Solar",
+      "owner": "Lakshmi",
+      "dept": "Risk",
+      "functions": [
+        "Accounting",
+        "Data Master"
+      ],
+      "tco": 1700000,
+      "process": "p.114"
+    }
+  ],
+  "node->key": "id",
+  "edges": [
+    {
+      "src": "app12874",
+      "dest": "app12875",
+      "data-type": "security reference"
+    },
+    {
+      "src": "app12874",
+      "dest": "app12876",
+      "data-type": "quotes"
+    },
+    {
+      "src": "app12875",
+      "dest": "app12875",
+      "data-type": "instructions"
+    },
+    {
+      "src": "app12874",
+      "dest": "app12872",
+      "data-type": "instructions"
+    },
+    {
+      "src": "app12875",
+      "dest": "app12874",
+      "data-type": "client master"
+    },
+    {
+      "src": "app12875",
+      "dest": "app12874",
+      "data-type": "allocations"
+    }
+  ],
+  "node-template": [
+    [
+      "=",
+      "dept",
+      "Equities"
+    ],
+    {
+      "label": [
+        "The name is %s",
+        "name"
+      ],
+      "style.fill": "blue"
+    },
+    "else",
+    {
+      "label": [
+        "%s",
+        "name"
+      ]
+    }
+  ],
+  "edge-template": [
+    "else",
+    {
+      "label": [
+        "data type: %s",
+        "data-type"
+      ]
+    }
+  ],
+  "node->container": "dept",
+  "container->parent": {
+    "Finance": "2LOD",
+    "Risk": "2LOD",
+    "Securities": "FO",
+    "Equities": "FO"
+  },
+  "container->data": {
+    "Securities": {
+      "head": "Amit Singh",
+      "revenue $Bn": 1.1
+    },
+    "Equities": {
+      "head": "Peter Nevitt",
+      "revenue $Bn": 0.55
+    },
+    "Risk": {
+      "head": "Amineer Singh",
+      "revenue $Bn": 0
+    },
+    "Finance": {
+      "head": "Cynthia Parcelle",
+      "revenue $Bn": 0
+    },
+    "2LOD": {
+      "head": "Markus Bauer",
+      "revenue $Bn": 0
+    },
+    "FO": {
+      "head": "Mia Fischer",
+      "revenue $Bn": 2.37
+    }
+  },
+  "container-template": [
+    [
+      ">",
+      "revenue $Bn",
+      1
+    ],
+    {
+      "style.fill": "'#f2e7da'"
+    },
+    [
+      ">",
+      "revenue $Bn",
+      0.5
+    ],
+    {
+      "style.fill": "'#faf6f2'"
+    }
+  ]
+}' \
+  http://localhost:5001/graph/json
+````
+
+</details>
+
+resulting in this svg diagram..
+
+
+<img src="../images/graphexample1.svg" width="850">
+
+
+#### Adding 'directives' and 'template'
+
+Using the edn example, above, let's use the additional features provided by directives and template.
+
+
+````bash
+curl --header "Content-Type: application/edn" \
+  --request POST \
+  --data '{"node->key" "id",
+ "node-template"
+ [["=" "dept" "Equities"]
+  {"label" ["The name is %s" "name"], "style.fill" "honeydew"}
+  "else"
+  {"label" ["%s" "name"]}],
+ "container->data"
+ {"Securities" {"head" "Amit Singh", "revenue $Bn" 1.1},
+  "Equities" {"head" "Peter Nevitt", "revenue $Bn" 0.55},
+  "Risk" {"head" "Amineer Singh", "revenue $Bn" 0},
+  "Finance" {"head" "Cynthia Parcelle", "revenue $Bn" 0},
+  "2LOD" {"head" "Markus Bauer", "revenue $Bn" 0},
+  "FO" {"head" "Mia Fischer", "revenue $Bn" 2.37}},
+ "nodes"
+ [{"id" "app12872",
+   "name" "Trade pad",
+   "owner" "Lakshmi",
+   "dept" "Finance",
+   "functions" ["Position Keeping" "Quoting"],
+   "tco" 1200000,
+   "process" "p.112"}
+  {"id" "app12873",
+   "name" "Data Source",
+   "owner" "India",
+   "dept" "Securities",
+   "functions" ["Booking" "Order Mgt"],
+   "tco" 1100000,
+   "process" "p.114"}
+  {"id" "app12874",
+   "name" "Crypto Bot",
+   "owner" "Joesph",
+   "dept" "Equities",
+   "functions" ["Accounting" "Booking"],
+   "tco" 500000,
+   "process" "p.112"}
+  {"id" "app12875",
+   "name" "Data Solar",
+   "owner" "Deepak",
+   "dept" "Securities",
+   "functions" ["Position Keeping" "Data Master"],
+   "tco" 1000000,
+   "process" "p.114"}
+  {"id" "app12876",
+   "name" "Data Solar",
+   "owner" "Lakshmi",
+   "dept" "Risk",
+   "functions" ["Accounting" "Data Master"],
+   "tco" 1700000,
+   "process" "p.114"}],
+ "node->container" "dept",
+ "edges"
+ [{"src" "app12874",
+   "dest" "app12875",
+   "data-type" "security reference"}
+  {"src" "app12874", "dest" "app12876", "data-type" "quotes"}
+  {"src" "app12875", "dest" "app12875", "data-type" "instructions"}
+  {"src" "app12874", "dest" "app12872", "data-type" "instructions"}
+  {"src" "app12875", "dest" "app12874", "data-type" "client master"}
+  {"src" "app12875", "dest" "app12874", "data-type" "allocations"}],
+ "container-template"
+ [[">" "revenue $Bn" 1] {"class" "large"}
+  [">" "revenue $Bn" 0.5] {"class" "medium"}],
+ "edge-template" ["else" {"label" ["data type: %s" "data-type"]}],
+ "container->parent"
+ {"Finance" "2LOD",
+  "Risk" "2LOD",
+  "Securities" "FO",
+  "Equities" "FO"}
+ "directives"
+ {"classes" {"large" {"style.fill" "'#f2e7da'"}
+             "medium" {"style.fill" "'#faf6f2'"}}}
+ "template"
+ [["=" "element-type" "ctr"] {"style.border-radius" 8}
+  ["=" "element-type" "shape"] {"style.border-radius" 3
+                                "style.shadow" true}]}' \
+http://localhost:5001/graph/edn
+````
+
+`"directives"` have been used to hold the class definition which have been rationalized out of `"container-template"`, and `"template"` has been used to provide some 'background' styling for containers and nodes.
+
+resulting in this (ever so slightly!) prettier diagram:
+
+<img src="../images/graphexample2.svg" width="850">

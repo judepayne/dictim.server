@@ -1,7 +1,7 @@
 (ns app.core (:require [io.pedestal.http :as http]
                        [io.pedestal.http.body-params :as body-params]
                        [environ.core :refer [env]]
-                       [app.graphspec :as graph]
+                       [dictim.graphspec :as graph]
                        [io.pedestal.interceptor.helpers :as interceptor]
                        [clojure.java.shell :as sh]
                        [dictim.d2.compile :as c]
@@ -107,8 +107,9 @@
 (defn graph->d2-json
   [{:keys [json-params] :as request}]
   (if json-params
-    (try
-      (let [d2 (graph/graph-spec->d2 (fix-hex json-params))
+    (try      
+      (let [dict (graph/graph-spec->dictim (fix-hex json-params))
+            d2 (apply c/d2 dict)
             svg (let [svg (d2->svg d2)]
                   (if (or (nil? svg) (= "" svg))
                     (throw (Exception. "The d2 engine returned nothing."))
@@ -122,7 +123,8 @@
   [{:keys [edn-params] :as request}]
   (if edn-params
     (try
-      (let [d2 (graph/graph-spec->d2 (fix-hex edn-params))
+      (let [dict (graph/graph-spec->dictim (fix-hex edn-params))
+            d2 (apply c/d2 dict)
             svg (let [svg (d2->svg d2)]
                   (if (or (nil? svg) (= "" svg))
                     (throw (Exception. "The d2 engine returned nothing."))
@@ -160,7 +162,7 @@
             dictim (or (:dictim jp) (get jp "dictim"))
             directives (or (:directives jp) (get jp "directives"))
             template (or (:template jp) (get jp "template"))
-            dictim (tp/add-styles dictim template directives)
+            dictim (tp/apply-template dictim {:template template :directives directives})
             d2 (apply c/d2 dictim)]
         (good-svg (d2->svg d2)))
       (catch Exception e (-> e .getMessage bad)))
@@ -175,7 +177,7 @@
             dictim (or (:dictim jp) (get jp "dictim"))
             directives (or (:directives jp) (get jp "directives"))
             template (or (:template jp) (get jp "template"))
-            dictim (tp/add-styles dictim template directives)
+            dictim (tp/apply-template dictim {:template template :directives directives})
             d2 (apply c/d2 dictim)]
         (good-svg (d2->svg d2)))
       (catch Exception e (-> e .getMessage bad)))
