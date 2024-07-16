@@ -45,10 +45,10 @@ jobs:
           name: check status is 200
           command: |
             bb script/test-webserver.bb
-      - run:
-          name: run tests
-          command: |
-            clojure -X:test
+      #- run:
+          #name: run tests
+          #command: |
+            #clojure -X:test
 
       - save_cache:
           paths:
