@@ -54,7 +54,7 @@
                       '({:shape "sequence_diagram"}
                         ["alice" "->" "bob" "What does it mean?"]
                         ["bob" "->" "alice" "The ability to play bridge or\ngolf as if they were games."]
-                        [:comment "This is a comment"]))})
+                        ["# This is a comment"]))})
          :body)
      "shape: sequence_diagram
 alice -> bob: What does it mean?
@@ -75,13 +75,9 @@ golf as if they were games.
                       '({:shape "sequence_diagram"}
                         ["alice" "->" "bob" "What does it mean?"]
                         ["bob" "->" "alice" "The ability to play bridge or\ngolf as if they were games."]
-                        [:comment "This is a comment"]))})
+                        ["# This is a comment"]))})
          :body)
-     "shape: sequence_diagram
-alice -> bob: What does it mean?
-bob -> alice: The ability to play bridge or
-golf as if they were games.
-# This is a comment")
+     "shape: sequence_diagram\nalice -> bob: What does it mean?\nbob -> alice: The ability to play bridge or\ngolf as if they were games.\n# This is a comment")
     (throw (Exception. "/dictim-to-d2/edn failed to convert dictim to d2!")))
 
 
@@ -97,7 +93,7 @@ golf as if they were games.
                      bob -> alice: The ability to play bridge or golf as if they were games.
                      # This is a comment"})
          :body)
-     "[{\"shape\":\"sequence_diagram\"},[\"alice\",\"->\",\"bob\",\"What does it mean?\"],[\"bob\",\"->\",\"alice\",\"The ability to play bridge or golf as if they were games.\"],[\"comment\",\"This is a comment\"]]")
+     "[{\"shape\":\"sequence_diagram\"},[\"alice\",\"->\",\"bob\",\"What does it mean?\"],[\"bob\",\"->\",\"alice\",\"The ability to play bridge or golf as if they were games.\"],\"# This is a comment\"]")
     (throw (Exception. "/d2-to-dictim/json failed to convert d2 to dictim")))
 
 
@@ -114,7 +110,13 @@ golf as if they were games.
                      # This is a comment"})
          :body
          clojure.edn/read-string)
-     '({"shape" "sequence_diagram"} ["alice" "->" "bob" "What does it mean?"] ["bob" "->" "alice" "The ability to play bridge or golf as if they were games."] [:comment "This is a comment"]))
+     '({"shape" "sequence_diagram"}
+ ["alice" "->" "bob" "What does it mean?"]
+ ["bob"
+  "->"
+  "alice"
+  "The ability to play bridge or golf as if they were games."]
+ "# This is a comment"))
     (throw (Exception. "/d2-to-dictim/edn failed to convert d2 to dictim")))
 
 
